@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bản debug cho phép HTTP tới mọi địa chỉ để chạy backend trên máy tính trong cùng mạng LAN với điện thoại. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>
