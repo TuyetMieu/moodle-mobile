@@ -1,0 +1,18 @@
+{
+  "name": "moodle-usth-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "REST API cho ứng dụng Moodle USTH mobile (dữ liệu mô phỏng, lưu bằng SQLite).",
+  "type": "module",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "reset": "node src/server.js --reset-only",
+    "test": "node --test",
+    "export-sample": "node scripts/export-sample.js"
+  }
+}
