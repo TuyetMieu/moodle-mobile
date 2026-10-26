@@ -1,0 +1,14 @@
+{
+  "title": "USTH Moodle — Your campus, your pace",
+  "icons": {
+    "icon": "/moodle.svg"
+  },
+  "description": "This EdTech app enhances student engagement by providing a streamlined dashboard for tracking assignments, grades, and academic progress, tailored for USTH students.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

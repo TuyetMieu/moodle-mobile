@@ -1,0 +1,15 @@
+{
+  "id": "earth",
+  "title": "Earth & Space Science",
+  "shortTitle": "Earth & Space Science",
+  "code": "ESS 2102",
+  "teacher": "Dr. Le Quang",
+  "initials": "LQ",
+  "image": "earth",
+  "progress": 90,
+  "done": 9,
+  "total": 10,
+  "grade": "9.0",
+  "credits": 3,
+  "tone": "purple"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "bio",
+  "title": "Molecular Biology",
+  "shortTitle": "Molecular Biology",
+  "code": "BIO 2201",
+  "teacher": "Dr. Tran Linh",
+  "initials": "TL",
+  "image": "biology",
+  "progress": 67,
+  "done": 6,
+  "total": 9,
+  "grade": "8.2",
+  "credits": 3,
+  "tone": "green"
+}

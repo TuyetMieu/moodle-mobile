@@ -1,0 +1,74 @@
+[
+  {
+    "id": "proposal",
+    "courseId": "web",
+    "title": "Final project proposal",
+    "category": "Final project",
+    "categoryWeight": 60,
+    "contribution": 15,
+    "description": "Outline your web application idea, user needs, technical stack, and project milestones. Include a wireframe and a short explanation of your database design. This proposal is one milestone of the final project, not the entire 60% component.",
+    "dueAt": 1792997283137
+  },
+  {
+    "id": "lab",
+    "courseId": "bio",
+    "title": "Lab 04 · DNA replication",
+    "category": "Mid-term & labs",
+    "categoryWeight": 30,
+    "contribution": 15,
+    "description": "Complete the DNA replication worksheet and discuss your lab observations. Include your annotated diagram and answers to the review questions.",
+    "dueAt": 1793045145137
+  },
+  {
+    "id": "midterm",
+    "courseId": "web",
+    "title": "Mid-term practical",
+    "category": "Mid-term & labs",
+    "categoryWeight": 30,
+    "contribution": 20,
+    "description": "Build a responsive interface using the concepts from weeks 1–8. Review component composition, state management, and accessible form patterns before the practical.",
+    "dueAt": 1793232345137
+  },
+  {
+    "id": "lab3",
+    "courseId": "web",
+    "title": "Lab 03 · React components",
+    "category": "Mid-term & labs",
+    "categoryWeight": 30,
+    "contribution": 10,
+    "completed": true,
+    "description": "Grade: 9.0 / 10. Feedback: Excellent component structure and thoughtful accessibility choices. Your reusable React component library has been reviewed.",
+    "dueAt": 1792713945137,
+    "score": 9
+  },
+  {
+    "id": "earth-report",
+    "courseId": "earth",
+    "title": "Satellite imagery report",
+    "category": "Final project",
+    "categoryWeight": 60,
+    "contribution": 30,
+    "description": "Compare two satellite images and discuss environmental changes visible in the data. Include your methods and a summary of your findings.",
+    "dueAt": 1793405145137
+  },
+  {
+    "id": "bio-quiz",
+    "courseId": "bio",
+    "title": "Quiz 05 · Gene expression",
+    "category": "Mid-term & labs",
+    "categoryWeight": 30,
+    "contribution": 10,
+    "description": "Review transcription, translation, and gene regulation. Complete the practice questions before taking the quiz in your university Moodle course.",
+    "dueAt": 1793145945137
+  },
+  {
+    "id": "bio-reading",
+    "courseId": "bio",
+    "title": "Reading reflection · Cell signalling",
+    "category": "Mid-term & labs",
+    "categoryWeight": 30,
+    "contribution": 5,
+    "description": "Read the cell signalling chapter and prepare a short reflection connecting receptor pathways to the examples discussed in class.",
+    "dueAt": 1793318745137
+  }
+]

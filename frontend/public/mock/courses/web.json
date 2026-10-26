@@ -1,0 +1,15 @@
+{
+  "id": "web",
+  "title": "Web Application Development",
+  "shortTitle": "Web Development",
+  "code": "ICT 3103",
+  "teacher": "Dr. Nguyen Minh",
+  "initials": "NM",
+  "image": "development",
+  "progress": 80,
+  "done": 8,
+  "total": 10,
+  "grade": "8.5",
+  "credits": 4,
+  "tone": "blue"
+}
