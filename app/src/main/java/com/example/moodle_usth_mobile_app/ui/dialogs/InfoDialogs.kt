@@ -28,7 +28,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,7 +44,6 @@ import androidx.compose.ui.unit.sp
 import com.example.moodle_usth_mobile_app.data.model.ResourceKind
 import com.example.moodle_usth_mobile_app.data.repository.LearningRules
 import com.example.moodle_usth_mobile_app.ui.AppDestination
-import com.example.moodle_usth_mobile_app.ui.DialogState
 import com.example.moodle_usth_mobile_app.ui.MainViewModel
 import com.example.moodle_usth_mobile_app.ui.components.AssignmentRow
 import com.example.moodle_usth_mobile_app.ui.components.BadgeItem
@@ -62,8 +60,8 @@ private val WEEKDAY_LABELS = listOf("CN", "T2", "T3", "T4", "T5", "T6", "T7")
 /** Overlay "Course information": ảnh, giảng viên, lịch học của môn. */
 @Composable
 fun CourseInfoDialog(courseId: String, viewModel: MainViewModel, onDismiss: () -> Unit) {
-    val courses by viewModel.courses.collectAsState()
-    val sessions by viewModel.classSessions.collectAsState()
+    val courses = viewModel.courses
+    val sessions = viewModel.classSessions
     val course = courses.firstOrNull { it.id == courseId } ?: return
 
     AppModal(title = "Course information", onDismiss = onDismiss) {
@@ -162,7 +160,7 @@ private fun resourceIcon(kind: ResourceKind): ImageVector = when (kind) {
 /** Overlay "Your weekly planner": các deadline chưa xong, sắp theo hạn nộp. */
 @Composable
 fun PlannerDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
-    val assignments by viewModel.assignments.collectAsState()
+    val assignments = viewModel.assignments
     val pending = LearningRules.pending(assignments)
 
     AppModal(title = "Your weekly planner", onDismiss = onDismiss) {
@@ -174,7 +172,7 @@ fun PlannerDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
                 status = viewModel.getAssignmentStatus(assignment),
                 timeRemainingText = viewModel.formatTimeRemaining(assignment),
                 showCourse = true,
-                onClick = { viewModel.openDialog(DialogState.AssignmentDetail(assignment.id)) }
+                onClick = { viewModel.openDialog("assignment", assignment.id) }
             )
         }
         InlineInfo(
@@ -187,11 +185,11 @@ fun PlannerDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
 /** Overlay "Your grade report" + nút tải CSV từ backend. */
 @Composable
 fun GradeReportDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
-    val courses by viewModel.courses.collectAsState()
-    val semester by viewModel.semester.collectAsState()
+    val courses = viewModel.courses
+    val semester = viewModel.semester
 
     AppModal(title = "Your grade report", onDismiss = onDismiss) {
-        BadgeItem(text = semester?.let { "${it.label} · ${it.academicYear}".uppercase() }.orEmpty(), tone = "sky")
+        BadgeItem(text = if (semester != null) "${semester.label} · ${semester.academicYear}".uppercase() else "", tone = "sky")
         ModalSubtitle("Your accumulated grades so far. Final results may change as remaining assessments are graded.")
         courses.forEach { course ->
             ReportRow(
@@ -220,8 +218,8 @@ fun GradeReportDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
 /** Overlay "Semester overview". */
 @Composable
 fun SemesterOverviewDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
-    val semester by viewModel.semester.collectAsState()
-    val courses by viewModel.courses.collectAsState()
+    val semester = viewModel.semester
+    val courses = viewModel.courses
     val summary = viewModel.getStudySummary()
     val current = semester ?: return
 
@@ -247,7 +245,7 @@ fun SemesterOverviewDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
             else "Đánh dấu hoàn thành được lưu trên máy chủ. Tín chỉ và điểm chỉ thay đổi sau khi có kết quả chính thức."
         )
         Button(
-            onClick = { viewModel.openDialog(DialogState.GradeReport) },
+            onClick = { viewModel.openDialog("gradeReport") },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),

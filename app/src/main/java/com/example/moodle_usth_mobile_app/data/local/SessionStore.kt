@@ -1,44 +1,62 @@
 package com.example.moodle_usth_mobile_app.data.local
 
 import android.content.Context
-import androidx.core.content.edit
 import com.example.moodle_usth_mobile_app.BuildConfig
 import java.io.File
 
-/** Lưu token, địa chỉ server và bản sao bootstrap gần nhất để mở app khi mất mạng. */
+/**
+ * Lưu những thứ cần nhớ giữa các lần mở app:
+ * token đăng nhập, địa chỉ server, chế độ xem thử, thời điểm đồng bộ
+ * và một bản sao dữ liệu (cache) để xem được khi mất mạng.
+ */
 class SessionStore(context: Context) {
 
     private val prefs = context.getSharedPreferences("moodle_session", Context.MODE_PRIVATE)
     private val cacheFile = File(context.filesDir, "bootstrap_cache.json")
 
+    /** Địa chỉ backend. Mặc định lấy từ build.gradle (http://10.0.2.2:8080 cho emulator). */
     var baseUrl: String
-        get() = prefs.getString(KEY_BASE_URL, null) ?: BuildConfig.API_BASE_URL
-        set(value) = prefs.edit { putString(KEY_BASE_URL, value.trim().trimEnd('/')) }
+        get() = prefs.getString("base_url", null) ?: BuildConfig.API_BASE_URL
+        set(value) {
+            prefs.edit().putString("base_url", value.trim().trimEnd('/')).apply()
+        }
 
     var token: String?
-        get() = prefs.getString(KEY_TOKEN, null)
-        set(value) = prefs.edit { if (value == null) remove(KEY_TOKEN) else putString(KEY_TOKEN, value) }
-
-    /** true khi người dùng chọn "Chế độ xem thử" với dữ liệu mẫu, không cần server. */
-    var demoMode: Boolean
-        get() = prefs.getBoolean(KEY_DEMO, false)
-        set(value) = prefs.edit { putBoolean(KEY_DEMO, value) }
-
-    fun readCache(): String? = cacheFile.takeIf { it.exists() }?.readText()
-
-    fun writeCache(json: String) = cacheFile.writeText(json)
-
-    fun clear() {
-        prefs.edit {
-            remove(KEY_TOKEN)
-            remove(KEY_DEMO)
+        get() = prefs.getString("token", null)
+        set(value) {
+            prefs.edit().putString("token", value).apply()
         }
-        cacheFile.delete()
+
+    /** true khi người dùng chọn "Xem thử với dữ liệu mẫu" (không cần server). */
+    var demoMode: Boolean
+        get() = prefs.getBoolean("demo_mode", false)
+        set(value) {
+            prefs.edit().putBoolean("demo_mode", value).apply()
+        }
+
+    /** Thời điểm tải dữ liệu thành công gần nhất. 0 = chưa có. */
+    var lastSyncedAtMs: Long
+        get() = prefs.getLong("last_synced_at", 0L)
+        set(value) {
+            prefs.edit().putLong("last_synced_at", value).apply()
+        }
+
+    fun readCache(): String? {
+        if (!cacheFile.exists()) return null
+        return cacheFile.readText()
     }
 
-    private companion object {
-        const val KEY_BASE_URL = "base_url"
-        const val KEY_TOKEN = "token"
-        const val KEY_DEMO = "demo_mode"
+    fun writeCache(json: String) {
+        cacheFile.writeText(json)
+    }
+
+    /** Đăng xuất: xoá token, chế độ xem thử, thời điểm đồng bộ và cache. Giữ lại địa chỉ server. */
+    fun clear() {
+        prefs.edit()
+            .remove("token")
+            .remove("demo_mode")
+            .remove("last_synced_at")
+            .apply()
+        cacheFile.delete()
     }
 }

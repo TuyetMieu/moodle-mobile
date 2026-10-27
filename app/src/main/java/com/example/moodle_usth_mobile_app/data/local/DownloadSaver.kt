@@ -16,11 +16,10 @@ object DownloadSaver {
     /** Lưu file vào thư mục Download và trả về mô tả vị trí để hiển thị cho người dùng. */
     suspend fun save(context: Context, file: DownloadedFile): String = withContext(Dispatchers.IO) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val values = ContentValues().apply {
-                put(MediaStore.Downloads.DISPLAY_NAME, file.fileName)
-                put(MediaStore.Downloads.MIME_TYPE, file.mimeType)
-                put(MediaStore.Downloads.IS_PENDING, 1)
-            }
+            val values = ContentValues()
+            values.put(MediaStore.Downloads.DISPLAY_NAME, file.fileName)
+            values.put(MediaStore.Downloads.MIME_TYPE, file.mimeType)
+            values.put(MediaStore.Downloads.IS_PENDING, 1) // đang ghi, chưa cho app khác thấy
             val resolver = context.contentResolver
             val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
                 ?: throw IOException("Không tạo được file trong thư mục Download")

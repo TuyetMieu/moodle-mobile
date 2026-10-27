@@ -21,7 +21,6 @@ import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moodle_usth_mobile_app.data.model.NotificationKind
 import com.example.moodle_usth_mobile_app.data.repository.LearningRules
-import com.example.moodle_usth_mobile_app.ui.DialogState
 import com.example.moodle_usth_mobile_app.ui.Formatters
 import com.example.moodle_usth_mobile_app.ui.MainViewModel
 import com.example.moodle_usth_mobile_app.ui.components.AssignmentRow
@@ -52,9 +50,9 @@ fun NotificationsDialog(
     viewModel: MainViewModel,
     onDismiss: () -> Unit
 ) {
-    val assignments by viewModel.assignments.collectAsState()
-    val courses by viewModel.courses.collectAsState()
-    val notifications by viewModel.notifications.collectAsState()
+    val assignments = viewModel.assignments
+    val courses = viewModel.courses
+    val notifications = viewModel.notifications
     val urgent = LearningRules.pending(assignments).filter { LearningRules.isUrgent(viewModel.getAssignmentStatus(it)) }
 
     AppModal(title = "Your notifications", onDismiss = onDismiss) {
@@ -67,7 +65,7 @@ fun NotificationsDialog(
         SectionHeadingRow(
             title = "Deadline reminders",
             actionText = "All classwork",
-            onActionClick = { viewModel.openDialog(DialogState.ClassworkList()) }
+            onActionClick = { viewModel.openDialog("classwork") }
         )
         if (urgent.isEmpty()) {
             EmptyState(title = "No urgent work. You're on track.")
@@ -78,7 +76,7 @@ fun NotificationsDialog(
                     status = viewModel.getAssignmentStatus(assignment),
                     timeRemainingText = viewModel.formatTimeRemaining(assignment),
                     showCourse = true,
-                    onClick = { viewModel.openDialog(DialogState.AssignmentDetail(assignment.id)) }
+                    onClick = { viewModel.openDialog("assignment", assignment.id) }
                 )
             }
         }
@@ -123,12 +121,12 @@ fun NotificationsDialog(
                     .clickable {
                         viewModel.markNotificationRead(notification.id)
                         val assignmentId = notification.assignmentId
-                        val course = notification.courseId?.let(viewModel::findCourse)
+                        val course = if (notification.courseId != null) viewModel.findCourse(notification.courseId) else null
                         when {
-                            assignmentId != null -> viewModel.openDialog(DialogState.AssignmentDetail(assignmentId))
+                            assignmentId != null -> viewModel.openDialog("assignment", assignmentId)
                             course != null -> {
                                 viewModel.selectCourse(course)
-                                viewModel.openDialog(DialogState.CourseInfo(course.id))
+                                viewModel.openDialog("courseInfo", course.id)
                             }
                         }
                     }

@@ -45,7 +45,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -84,7 +83,6 @@ import com.example.moodle_usth_mobile_app.ui.theme.TextSecondary
 
 @Composable
 fun LoginScreen(viewModel: MainViewModel) {
-    val state by viewModel.loginState.collectAsState()
     val focusManager = LocalFocusManager.current
     var username by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
@@ -199,7 +197,7 @@ fun LoginScreen(viewModel: MainViewModel) {
             )
         }
 
-        val error = state.error
+        val error = viewModel.loginError
         if (error != null) {
             Row(
                 modifier = Modifier
@@ -218,14 +216,14 @@ fun LoginScreen(viewModel: MainViewModel) {
         Spacer(modifier = Modifier.height(18.dp))
         Button(
             onClick = { submit() },
-            enabled = !state.isSubmitting,
+            enabled = !viewModel.isLoggingIn,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
             shape = RoundedCornerShape(14.dp),
             colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo)
         ) {
-            if (state.isSubmitting) {
+            if (viewModel.isLoggingIn) {
                 CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = Color.White)
             } else {
                 Text(text = "Đăng nhập", fontWeight = FontWeight.Bold, fontSize = 15.sp)
@@ -234,7 +232,7 @@ fun LoginScreen(viewModel: MainViewModel) {
         Spacer(modifier = Modifier.height(10.dp))
         OutlinedButton(
             onClick = { viewModel.startDemo() },
-            enabled = !state.isSubmitting,
+            enabled = !viewModel.isLoggingIn,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
@@ -274,7 +272,9 @@ private fun LoginField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
-        placeholder = placeholder?.let { { Text(it, color = TextSecondary.copy(alpha = 0.6f)) } },
+        placeholder = {
+            if (placeholder != null) Text(placeholder, color = TextSecondary.copy(alpha = 0.6f))
+        },
         leadingIcon = { Icon(icon, contentDescription = null, tint = TextSecondary) },
         trailingIcon = trailing,
         singleLine = true,

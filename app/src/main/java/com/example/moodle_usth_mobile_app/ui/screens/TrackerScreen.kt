@@ -35,7 +35,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,7 +49,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moodle_usth_mobile_app.data.model.Course
 import com.example.moodle_usth_mobile_app.data.model.formatGrade
-import com.example.moodle_usth_mobile_app.ui.DialogState
 import com.example.moodle_usth_mobile_app.ui.MainViewModel
 import com.example.moodle_usth_mobile_app.ui.components.AppProgressBar
 import com.example.moodle_usth_mobile_app.ui.components.BadgeItem
@@ -72,7 +70,7 @@ fun TrackerScreen(
     onCourseClick: (Course) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val semester by viewModel.semester.collectAsState()
+    val semester = viewModel.semester
     val summary = viewModel.getStudySummary()
 
     Column(
@@ -96,7 +94,7 @@ fun TrackerScreen(
                 }
             }
             IconButton(
-                onClick = { viewModel.openDialog(DialogState.GradeReport) },
+                onClick = { viewModel.openDialog("gradeReport") },
                 modifier = Modifier
                     .size(42.dp)
                     .background(Color.White, CircleShape)
@@ -117,7 +115,7 @@ fun TrackerScreen(
                 modifier = Modifier
                     .clip(RoundedCornerShape(20.dp))
                     .background(Color.White)
-                    .clickable { viewModel.openDialog(DialogState.SemesterOverview) }
+                    .clickable { viewModel.openDialog("semester") }
                     .padding(horizontal = 14.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -198,8 +196,8 @@ fun TrackerScreen(
                 }
                 StatCard(modifier = Modifier.weight(1f).fillMaxHeight(), icon = Icons.Default.EmojiEvents, tone = "blue", label = "Average grade") {
                     val average = semester?.averageGrade
-                    BigNumber(average?.let { formatGrade(it) } ?: "—", "/10")
-                    BadgeItem(text = if ((average ?: 0.0) >= 8.0) "Keep it up!" else "You've got this", tone = "sky")
+                    BigNumber(if (average != null) formatGrade(average) else "—", "/10")
+                    BadgeItem(text = if (average != null && average >= 8.0) "Keep it up!" else "You've got this", tone = "sky")
                     Text(text = "Weighted by credits.", fontSize = 11.sp, color = TextSecondary)
                 }
             }

@@ -30,12 +30,12 @@ class JsonMapper(private val timeShiftMs: Long = 0L) {
             serverTimeEpochMs = json.getLong("serverTime") + timeShiftMs,
             profile = profile(json.getJSONObject("profile")),
             semester = semester(json.getJSONObject("semester")),
-            courses = json.getJSONArray("courses").objects().map(::course),
-            assignments = json.getJSONArray("assignments").objects().map(::assignment),
-            sessions = timetable.getJSONArray("sessions").objects().map(::session),
+            courses = toList(json.getJSONArray("courses")).map { course(it) },
+            assignments = toList(json.getJSONArray("assignments")).map { assignment(it) },
+            sessions = toList(timetable.getJSONArray("sessions")).map { session(it) },
             semesterStartsAtEpochMs = timetable.getLong("semesterStartsAt") + timeShiftMs,
             semesterEndsAtEpochMs = timetable.getLong("semesterEndsAt") + timeShiftMs,
-            notifications = json.getJSONObject("notifications").getJSONArray("items").objects().map(::notification)
+            notifications = toList(json.getJSONObject("notifications").getJSONArray("items")).map { notification(it) }
         )
     }
 
@@ -61,10 +61,10 @@ class JsonMapper(private val timeShiftMs: Long = 0L) {
         contribution = json.getInt("contribution"),
         description = json.getString("description"),
         dueAtEpochMs = json.getLong("dueAt") + timeShiftMs,
-        completedAtEpochMs = json.optLongOrNull("completedAt")?.plus(timeShiftMs),
-        score = json.optDoubleOrNull("score"),
+        completedAtEpochMs = getLongOrNull(json, "completedAt")?.plus(timeShiftMs),
+        score = getDoubleOrNull(json, "score"),
         maxScore = json.optDouble("maxScore", 10.0),
-        feedback = json.optStringOrNull("feedback")
+        feedback = getStringOrNull(json, "feedback")
     )
 
     private fun semester(json: JSONObject) = SemesterOverview(
@@ -74,7 +74,7 @@ class JsonMapper(private val timeShiftMs: Long = 0L) {
         creditsMilestone = json.getInt("creditsMilestone"),
         enrolledCredits = json.getInt("enrolledCredits"),
         coursesCount = json.getInt("coursesCount"),
-        averageGrade = json.optDoubleOrNull("averageGrade")
+        averageGrade = getDoubleOrNull(json, "averageGrade")
     )
 
     private fun course(json: JSONObject) = Course(
@@ -88,19 +88,19 @@ class JsonMapper(private val timeShiftMs: Long = 0L) {
         credits = json.getInt("credits"),
         tone = json.getString("tone"),
         summary = json.optString("summary"),
-        grade = json.optDoubleOrNull("grade"),
+        grade = getDoubleOrNull(json, "grade"),
         done = json.optInt("done"),
         total = json.optInt("total"),
-        gradeComponents = json.optJSONArray("gradeComponents")?.objects()?.map(::gradeComponent).orEmpty(),
-        announcements = json.optJSONArray("announcements")?.objects()?.map(::announcement).orEmpty(),
-        resources = json.optJSONArray("resources")?.objects()?.map(::resource).orEmpty()
+        gradeComponents = toList(json.optJSONArray("gradeComponents")).map { gradeComponent(it) },
+        announcements = toList(json.optJSONArray("announcements")).map { announcement(it) },
+        resources = toList(json.optJSONArray("resources")).map { resource(it) }
     )
 
     private fun resource(json: JSONObject) = CourseResource(
         id = json.getString("id"),
         week = json.getInt("week"),
         title = json.getString("title"),
-        kind = runCatching { ResourceKind.valueOf(json.getString("kind")) }.getOrDefault(ResourceKind.NOTES),
+        kind = ResourceKind.entries.find { it.name == json.getString("kind") } ?: ResourceKind.NOTES,
         fileType = json.getString("fileType"),
         sizeKb = json.getInt("sizeKb")
     )
@@ -108,14 +108,14 @@ class JsonMapper(private val timeShiftMs: Long = 0L) {
     private fun gradeComponent(json: JSONObject) = GradeComponent(
         category = AssignmentCategory.fromKey(json.getString("key")),
         weight = json.getInt("weight"),
-        score = json.optDoubleOrNull("score"),
-        status = runCatching { GradeStatus.valueOf(json.getString("status")) }.getOrDefault(GradeStatus.NOT_GRADED)
+        score = getDoubleOrNull(json, "score"),
+        status = GradeStatus.entries.find { it.name == json.getString("status") } ?: GradeStatus.NOT_GRADED
     )
 
     private fun announcement(json: JSONObject) = Announcement(
         id = json.getString("id"),
         courseId = json.getString("courseId"),
-        kind = runCatching { AnnouncementKind.valueOf(json.getString("kind")) }.getOrDefault(AnnouncementKind.ANNOUNCEMENT),
+        kind = AnnouncementKind.entries.find { it.name == json.getString("kind") } ?: AnnouncementKind.ANNOUNCEMENT,
         title = json.getString("title"),
         body = json.getString("body"),
         author = json.getString("author"),
@@ -136,20 +136,27 @@ class JsonMapper(private val timeShiftMs: Long = 0L) {
 
     private fun notification(json: JSONObject) = AppNotification(
         id = json.getString("id"),
-        kind = runCatching { NotificationKind.valueOf(json.getString("kind")) }.getOrDefault(NotificationKind.MESSAGE),
+        kind = NotificationKind.entries.find { it.name == json.getString("kind") } ?: NotificationKind.MESSAGE,
         title = json.getString("title"),
         body = json.getString("body"),
         createdAtEpochMs = json.getLong("createdAt") + timeShiftMs,
         read = json.optBoolean("read"),
-        assignmentId = json.optStringOrNull("assignmentId"),
-        courseId = json.optStringOrNull("courseId")
+        assignmentId = getStringOrNull(json, "assignmentId"),
+        courseId = getStringOrNull(json, "courseId")
     )
 }
 
-private fun JSONArray.objects(): List<JSONObject> = List(length()) { getJSONObject(it) }
+/** Đổi JSONArray thành List<JSONObject> để dùng được .map { }. */
+private fun toList(array: JSONArray?): List<JSONObject> {
+    val list = mutableListOf<JSONObject>()
+    if (array == null) return list
+    for (i in 0 until array.length()) list.add(array.getJSONObject(i))
+    return list
+}
 
-private fun JSONObject.optLongOrNull(key: String): Long? = if (isNull(key)) null else getLong(key)
+// org.json trả về 0 hoặc "null" cho giá trị null, nên phải kiểm tra isNull trước.
+private fun getLongOrNull(json: JSONObject, key: String): Long? = if (json.isNull(key)) null else json.getLong(key)
 
-private fun JSONObject.optDoubleOrNull(key: String): Double? = if (isNull(key)) null else getDouble(key)
+private fun getDoubleOrNull(json: JSONObject, key: String): Double? = if (json.isNull(key)) null else json.getDouble(key)
 
-private fun JSONObject.optStringOrNull(key: String): String? = if (isNull(key)) null else getString(key)
+private fun getStringOrNull(json: JSONObject, key: String): String? = if (json.isNull(key)) null else json.getString(key)

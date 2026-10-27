@@ -1,7 +1,10 @@
 package com.example.moodle_usth_mobile_app.ui
 
 import android.app.Application
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.moodle_usth_mobile_app.data.local.DownloadSaver
@@ -17,314 +20,338 @@ import com.example.moodle_usth_mobile_app.data.remote.ApiException
 import com.example.moodle_usth_mobile_app.data.repository.LearningRules
 import com.example.moodle_usth_mobile_app.data.repository.MoodleRepository
 import com.example.moodle_usth_mobile_app.data.repository.StudySummary
-import kotlinx.coroutines.channels.Channel
+import com.example.moodle_usth_mobile_app.reminders.ReminderHelper
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
-import java.io.IOException
 
-enum class AppDestination(val label: String) {
-    HOME("Home"),
-    COURSES("Courses"),
-    TIMETABLE("Lịch học"),
-    TRACKER("Tracker"),
-    PROFILE("Profile")
+/** 5 tab ở thanh dưới cùng. */
+enum class AppDestination {
+    HOME, COURSES, TIMETABLE, TRACKER, PROFILE
 }
 
-sealed class DialogState {
-    data class AssignmentDetail(val assignmentId: String) : DialogState()
-    data class ClassworkList(val filter: String = "todo") : DialogState()
-    object Notifications : DialogState()
-    data class CourseInfo(val courseId: String) : DialogState()
-    object CalendarPlanner : DialogState()
-    object GradeReport : DialogState()
-    object SemesterOverview : DialogState()
-}
-
-enum class AuthState { SIGNED_OUT, SIGNED_IN }
-
-data class LoginUiState(val isSubmitting: Boolean = false, val error: String? = null)
-
-data class LoadUiState(
-    val isLoading: Boolean = false,
-    val isRefreshing: Boolean = false,
-    val isOffline: Boolean = false,
-    val error: String? = null
-)
-
+/**
+ * ViewModel giữ toàn bộ dữ liệu của app.
+ *
+ * Mỗi biến khai báo bằng `mutableStateOf` là "state": khi giá trị đổi, các màn hình đang đọc
+ * biến đó sẽ tự vẽ lại. Màn hình chỉ cần đọc `viewModel.tenBien` là được.
+ */
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     val repository = MoodleRepository(application)
+    private val context = application
 
-    private val _authState = MutableStateFlow(if (repository.isSignedIn) AuthState.SIGNED_IN else AuthState.SIGNED_OUT)
-    val authState: StateFlow<AuthState> = _authState.asStateFlow()
+    // ---------------------------------------------------------- đăng nhập
 
-    private val _loginState = MutableStateFlow(LoginUiState())
-    val loginState: StateFlow<LoginUiState> = _loginState.asStateFlow()
+    var isLoggedIn by mutableStateOf(repository.isSignedIn)
+    var isLoggingIn by mutableStateOf(false)
+    var loginError by mutableStateOf<String?>(null)
 
-    private val _loadState = MutableStateFlow(LoadUiState())
-    val loadState: StateFlow<LoadUiState> = _loadState.asStateFlow()
+    // ---------------------------------------------------------- dữ liệu
 
-    private val _data = MutableStateFlow<AppData?>(null)
-    val data: StateFlow<AppData?> = _data.asStateFlow()
+    /** Toàn bộ dữ liệu lấy từ GET /api/v1/bootstrap. null = chưa tải xong. */
+    var data by mutableStateOf<AppData?>(null)
+    var isLoading by mutableStateOf(false)
+    var isRefreshing by mutableStateOf(false)
+    var isOffline by mutableStateOf(false)
+    var loadError by mutableStateOf<String?>(null)
+    var lastSyncedAtMs by mutableStateOf<Long?>(null)
 
-    val assignments: StateFlow<List<Assignment>> = _data
-        .map { it?.assignments.orEmpty() }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    // ---------------------------------------------------------- điều hướng
 
-    /** Môn học kèm tiến độ tính lại từ danh sách bài tập hiện tại. */
-    val courses: StateFlow<List<Course>> = _data
-        .map { data -> data?.courses.orEmpty().map { LearningRules.courseWithProgress(it, data!!.assignments) } }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
-
-    val classSessions: StateFlow<List<ClassSession>> = _data
-        .map { it?.sessions.orEmpty() }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
-
-    val notifications: StateFlow<List<AppNotification>> = _data
-        .map { it?.notifications.orEmpty() }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
-
-    val profile: StateFlow<StudentProfile?> = _data
-        .map { it?.profile }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
-
-    val semester: StateFlow<SemesterOverview?> = _data
-        .map { it?.semester }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
-
-    private val _currentDestination = MutableStateFlow(AppDestination.HOME)
-    val currentDestination: StateFlow<AppDestination> = _currentDestination.asStateFlow()
-
-    private val _selectedCourseId = MutableStateFlow<String?>(null)
-    val selectedCourse: StateFlow<Course?> = combine(_selectedCourseId, courses) { id, list ->
-        list.firstOrNull { it.id == id }
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
-
-    /** Tab để quay lại khi bấm Back ở trang chi tiết môn học. */
-    private var courseBackDestination = AppDestination.COURSES
-
-    private val _activeDialog = MutableStateFlow<DialogState?>(null)
-    val activeDialog: StateFlow<DialogState?> = _activeDialog.asStateFlow()
-
-    private val _pendingAssignmentIds = MutableStateFlow<Set<String>>(emptySet())
-    val pendingAssignmentIds: StateFlow<Set<String>> = _pendingAssignmentIds.asStateFlow()
-
-    private val _timetableSelectedDateMs = MutableStateFlow(System.currentTimeMillis())
-    val timetableSelectedDateMs: StateFlow<Long> = _timetableSelectedDateMs.asStateFlow()
-
-    private val _timetableCalendarView = MutableStateFlow("week") // "week" | "month"
-    val timetableCalendarView: StateFlow<String> = _timetableCalendarView.asStateFlow()
-
-    private val _messages = Channel<String>(Channel.BUFFERED)
-    val messages = _messages.receiveAsFlow()
+    var currentDestination by mutableStateOf(AppDestination.HOME)
+    var selectedCourseId by mutableStateOf<String?>(null)
+    private var tabBeforeCourse = AppDestination.COURSES
 
     /**
-     * Đồng hồ dùng chung cho mọi màn hình. Là Compose state nên những composable đọc nó
-     * (qua [getAssignmentStatus], [formatTimeRemaining]...) sẽ tự cập nhật mỗi 30 giây.
+     * Dialog đang mở: "" = không có. Các tên dùng trong app:
+     * "assignment", "classwork", "notifications", "courseInfo", "planner", "gradeReport", "semester".
+     * [dialogArg] là tham số kèm theo (id bài tập, id môn học hoặc bộ lọc "todo"/"urgent"/"done").
      */
-    private val clock = mutableLongStateOf(System.currentTimeMillis())
-    val nowMs: Long get() = clock.longValue
+    var dialogName by mutableStateOf("")
+    var dialogArg by mutableStateOf("")
+
+    // ---------------------------------------------------------- linh tinh
+
+    /** Bài tập đang chờ server trả lời khi bấm Mark as done / Undo (để khoá nút). */
+    var savingAssignmentId by mutableStateOf<String?>(null)
+
+    var timetableSelectedDateMs by mutableLongStateOf(System.currentTimeMillis())
+    var timetableCalendarView by mutableStateOf("week") // "week" hoặc "month"
+
+    /** Thông báo ngắn hiện ở dưới màn hình (snackbar). MainActivity hiện xong sẽ đặt lại null. */
+    var message by mutableStateOf<String?>(null)
+
+    var remindersEnabled by mutableStateOf(ReminderHelper.isEnabled(application))
+
+    /** Giờ hiện tại, cập nhật mỗi 30 giây để các nhãn "còn 2 giờ", "quá hạn" tự đổi. */
+    var nowMs by mutableLongStateOf(System.currentTimeMillis())
 
     val isDemoMode: Boolean get() = repository.isDemoMode
     val serverUrl: String get() = repository.session.baseUrl
 
+    // ---------------------------------------------------------- dữ liệu suy ra từ `data`
+
+    val assignments: List<Assignment>
+        get() = data?.assignments ?: emptyList()
+
+    /** Môn học, với số bài đã xong / tổng số bài tính lại từ danh sách bài hiện tại. */
+    val courses: List<Course>
+        get() {
+            val list = data?.courses ?: return emptyList()
+            return list.map { LearningRules.courseWithProgress(it, assignments) }
+        }
+
+    val classSessions: List<ClassSession> get() = data?.sessions ?: emptyList()
+    val notifications: List<AppNotification> get() = data?.notifications ?: emptyList()
+    val profile: StudentProfile? get() = data?.profile
+    val semester: SemesterOverview? get() = data?.semester
+    val selectedCourse: Course? get() = courses.find { it.id == selectedCourseId }
+
     init {
+        // Đồng hồ: cứ 30 giây cập nhật nowMs một lần.
         viewModelScope.launch {
             while (true) {
                 delay(30_000)
-                clock.longValue = System.currentTimeMillis()
+                nowMs = System.currentTimeMillis()
             }
         }
-        if (_authState.value == AuthState.SIGNED_IN) refresh(initial = true)
+        if (isLoggedIn) refresh(initial = true)
     }
 
-    // ------------------------------------------------------------------ auth
+    // ---------------------------------------------------------- đăng nhập / đăng xuất
 
     fun login(baseUrl: String, username: String, password: String) {
         if (username.isBlank() || password.isBlank()) {
-            _loginState.value = LoginUiState(error = "Vui lòng nhập mã sinh viên và mật khẩu")
+            loginError = "Vui lòng nhập mã sinh viên và mật khẩu"
             return
         }
         viewModelScope.launch {
-            _loginState.value = LoginUiState(isSubmitting = true)
+            isLoggingIn = true
+            loginError = null
             try {
                 repository.login(baseUrl, username, password)
-                _loginState.value = LoginUiState()
-                onSignedIn()
-            } catch (error: IOException) {
-                _loginState.value = LoginUiState(error = error.toUserMessage(baseUrl))
+                onLoggedIn()
+            } catch (error: Exception) {
+                loginError = errorText(error, baseUrl)
             }
+            isLoggingIn = false
         }
     }
 
     fun startDemo() {
         repository.startDemo()
-        _loginState.value = LoginUiState()
-        onSignedIn()
+        loginError = null
+        onLoggedIn()
+    }
+
+    private fun onLoggedIn() {
+        currentDestination = AppDestination.HOME
+        isLoggedIn = true
+        refresh(initial = true)
     }
 
     fun logout() {
         viewModelScope.launch {
             repository.logout()
-            _data.value = null
-            _activeDialog.value = null
-            _selectedCourseId.value = null
-            _currentDestination.value = AppDestination.HOME
-            _loadState.value = LoadUiState()
-            _authState.value = AuthState.SIGNED_OUT
+            ReminderHelper.cancelAll(context)
+            data = null
+            dialogName = ""
+            selectedCourseId = null
+            currentDestination = AppDestination.HOME
+            isOffline = false
+            loadError = null
+            lastSyncedAtMs = null
+            isLoggedIn = false
         }
     }
 
-    private fun onSignedIn() {
-        _currentDestination.value = AppDestination.HOME
-        _authState.value = AuthState.SIGNED_IN
-        refresh(initial = true)
-    }
+    // ---------------------------------------------------------- tải dữ liệu
 
-    // ------------------------------------------------------------------ data
+    /**
+     * Tải lại dữ liệu từ server (hoặc bản lưu khi mất mạng).
+     * quiet = true khi app tự làm mới lúc quay lại: không làm phiền người dùng bằng thông báo lỗi.
+     */
+    fun refresh(initial: Boolean = false, quiet: Boolean = false) {
+        if (isLoading || isRefreshing) return // đang tải rồi thì thôi
+        val wasOffline = isOffline
+        if (initial || data == null) isLoading = true else isRefreshing = true
+        loadError = null
 
-    fun refresh(initial: Boolean = false) {
-        if (_loadState.value.isLoading || _loadState.value.isRefreshing) return
         viewModelScope.launch {
-            _loadState.update { it.copy(isLoading = initial || _data.value == null, isRefreshing = !initial && _data.value != null, error = null) }
             try {
                 val result = repository.load()
-                _data.value = result.data
-                clock.longValue = System.currentTimeMillis()
-                _loadState.value = LoadUiState(isOffline = result.fromCache)
-                if (result.fromCache) _messages.send("Không kết nối được máy chủ · đang hiển thị dữ liệu đã lưu.")
-            } catch (error: ApiException) {
-                if (error.status == 401) {
-                    _authState.value = AuthState.SIGNED_OUT
-                    _loginState.value = LoginUiState(error = "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.")
-                    _loadState.value = LoadUiState()
-                } else {
-                    _loadState.value = LoadUiState(error = error.message)
+                setNewData(result.data)
+                nowMs = System.currentTimeMillis()
+                isOffline = result.fromCache
+                lastSyncedAtMs = result.syncedAtMs
+                if (result.fromCache && !(quiet && wasOffline)) {
+                    message = "Không kết nối được máy chủ · đang hiển thị dữ liệu đã lưu."
                 }
-            } catch (error: IOException) {
-                _loadState.value = LoadUiState(error = error.toUserMessage(serverUrl))
+            } catch (error: Exception) {
+                if (error is ApiException && error.status == 401) {
+                    // Token hết hạn → quay về màn đăng nhập.
+                    isLoggedIn = false
+                    loginError = "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
+                    ReminderHelper.cancelAll(context)
+                } else if (data == null) {
+                    loadError = errorText(error, serverUrl) // chưa có gì để xem → hiện màn lỗi
+                } else if (!quiet) {
+                    message = errorText(error, serverUrl) // đã có dữ liệu → chỉ báo bằng snackbar
+                }
             }
+            isLoading = false
+            isRefreshing = false
         }
     }
+
+    /** Gọi từ MainActivity.onResume: cập nhật giờ và tự làm mới nếu dữ liệu đã cũ hơn 5 phút. */
+    fun onAppResumed() {
+        nowMs = System.currentTimeMillis()
+        if (!isLoggedIn || isDemoMode || data == null) return
+        val syncedAt = lastSyncedAtMs ?: 0L
+        val fiveMinutes = 5 * 60_000L
+        if (isOffline || nowMs - syncedAt > fiveMinutes) refresh(quiet = true)
+    }
+
+    /** Đổi dữ liệu và đặt lại lịch nhắc hạn nộp cho khớp. */
+    private fun setNewData(newData: AppData) {
+        data = newData
+        ReminderHelper.update(context, newData.assignments)
+    }
+
+    // ---------------------------------------------------------- thao tác của người dùng
 
     fun toggleAssignmentCompleted(assignmentId: String) {
         val assignment = findAssignment(assignmentId) ?: return
-        if (assignmentId in _pendingAssignmentIds.value) return
+        val currentData = data ?: return
+        if (savingAssignmentId != null) return // đang lưu bài khác
         val markDone = !assignment.isCompleted
+
         viewModelScope.launch {
-            _pendingAssignmentIds.update { it + assignmentId }
+            savingAssignmentId = assignmentId
             try {
                 val updated = repository.setCompleted(assignment, markDone)
-                val data = _data.updateAndGet { data ->
-                    data?.copy(assignments = data.assignments.map { if (it.id == updated.id) updated else it })
-                }
-                val course = data?.courses?.firstOrNull { it.id == updated.courseId }
-                    ?.let { LearningRules.courseWithProgress(it, data.assignments) }
+                // Thay bài cũ bằng bài server trả về.
+                val newAssignments = currentData.assignments.map { if (it.id == updated.id) updated else it }
+                setNewData(currentData.copy(assignments = newAssignments))
+
+                val course = findCourse(updated.courseId)
                 if (course != null) {
-                    val left = course.total - course.done
-                    _messages.send(
-                        if (markDone) "${course.shortTitle}: ${course.progress}% complete · $left tasks left."
-                        else "Đã bỏ đánh dấu “${updated.title}”."
-                    )
+                    message = if (markDone) {
+                        "${course.shortTitle}: ${course.progress}% complete · ${course.total - course.done} tasks left."
+                    } else {
+                        "Đã bỏ đánh dấu “${updated.title}”."
+                    }
                 }
-            } catch (error: IOException) {
-                _messages.send(error.toUserMessage(serverUrl))
-            } finally {
-                _pendingAssignmentIds.update { it - assignmentId }
+            } catch (error: Exception) {
+                message = errorText(error, serverUrl)
             }
+            savingAssignmentId = null
         }
     }
 
     fun markNotificationRead(notificationId: String) {
-        val notification = notifications.value.firstOrNull { it.id == notificationId } ?: return
+        val currentData = data ?: return
+        val notification = notifications.find { it.id == notificationId } ?: return
         if (notification.read) return
-        _data.update { data ->
-            data?.copy(notifications = data.notifications.map { if (it.id == notificationId) it.copy(read = true) else it })
-        }
-        viewModelScope.launch { runCatching { repository.markNotificationRead(notificationId) } }
-    }
-
-    fun downloadGradeReport() {
-        val data = _data.value ?: return
+        // Đổi ngay trên màn hình, gửi lên server sau.
+        val newList = currentData.notifications.map { if (it.id == notificationId) it.copy(read = true) else it }
+        data = currentData.copy(notifications = newList)
         viewModelScope.launch {
             try {
-                val file = repository.downloadGradeReport(data)
-                val location = DownloadSaver.save(getApplication(), file)
-                _messages.send("Đã tải báo cáo điểm: $location")
-            } catch (error: IOException) {
-                _messages.send(error.toUserMessage(serverUrl))
+                repository.markNotificationRead(notificationId)
+            } catch (error: Exception) {
+                // Bỏ qua: lần làm mới sau sẽ lấy lại trạng thái đúng từ server.
             }
         }
     }
 
-    // ------------------------------------------------------------ navigation
+    fun downloadGradeReport() {
+        val currentData = data ?: return
+        viewModelScope.launch {
+            try {
+                val file = repository.downloadGradeReport(currentData)
+                val location = DownloadSaver.save(context, file)
+                message = "Đã tải báo cáo điểm: $location"
+            } catch (error: Exception) {
+                message = errorText(error, serverUrl)
+            }
+        }
+    }
+
+    // ---------------------------------------------------------- nhắc hạn nộp
+
+    fun setRemindersOn(enabled: Boolean) {
+        ReminderHelper.setEnabled(context, enabled)
+        remindersEnabled = enabled
+        val count = ReminderHelper.update(context, assignments)
+        message = if (!enabled) {
+            "Đã tắt nhắc hạn nộp."
+        } else if (count == 0) {
+            "Đã bật nhắc hạn nộp · hiện không có bài nào cần nhắc."
+        } else {
+            "Đã bật nhắc hạn nộp · $count lời nhắc (24 giờ và 2 giờ trước hạn)."
+        }
+    }
+
+    fun canPostNotifications(): Boolean = ReminderHelper.canShowNotifications(context)
+
+    // ---------------------------------------------------------- điều hướng
 
     fun navigateTo(destination: AppDestination) {
-        _currentDestination.value = destination
-        _selectedCourseId.value = null // reset course detail when navigating tabs
+        currentDestination = destination
+        selectedCourseId = null
     }
 
+    /** Mở trang chi tiết môn học. Truyền null để đóng (quay về tab trước đó). */
     fun selectCourse(course: Course?) {
         if (course == null) {
-            _selectedCourseId.value = null
-            _currentDestination.value = courseBackDestination
+            selectedCourseId = null
+            currentDestination = tabBeforeCourse
             return
         }
-        if (_selectedCourseId.value == null) courseBackDestination = _currentDestination.value
-        _selectedCourseId.value = course.id
-        _activeDialog.value = null
+        if (selectedCourseId == null) tabBeforeCourse = currentDestination
+        selectedCourseId = course.id
+        dialogName = ""
     }
 
-    fun openDialog(dialog: DialogState) {
-        _activeDialog.value = dialog
+    fun openDialog(name: String, arg: String = "") {
+        dialogName = name
+        dialogArg = arg
     }
 
     fun closeDialog() {
-        _activeDialog.value = null
+        dialogName = ""
     }
 
-    fun setTimetableDate(dateMs: Long) {
-        _timetableSelectedDateMs.value = dateMs
+    /** Mở chi tiết bài tập khi người dùng chạm vào thông báo nhắc hạn nộp. */
+    fun openAssignment(assignmentId: String) {
+        if (isLoggedIn) openDialog("assignment", assignmentId)
     }
 
-    fun setTimetableCalendarView(view: String) {
-        _timetableCalendarView.value = view
-    }
+    // ---------------------------------------------------------- hàm tiện ích cho màn hình
 
-    // --------------------------------------------------------------- helpers
+    fun findAssignment(id: String): Assignment? = assignments.find { it.id == id }
 
-    fun findAssignment(id: String): Assignment? = assignments.value.firstOrNull { it.id == id }
+    fun findCourse(id: String): Course? = courses.find { it.id == id }
 
-    fun findCourse(id: String): Course? = courses.value.firstOrNull { it.id == id }
+    fun getStudySummary(): StudySummary = LearningRules.summary(assignments, nowMs)
 
-    fun getStudySummary(currentTimeMs: Long = nowMs): StudySummary =
-        LearningRules.summary(assignments.value, currentTimeMs)
+    fun getAssignmentStatus(assignment: Assignment): AssignmentStatus = LearningRules.status(assignment, nowMs)
 
-    fun getAssignmentStatus(assignment: Assignment, currentTimeMs: Long = nowMs): AssignmentStatus =
-        LearningRules.status(assignment, currentTimeMs)
+    fun formatTimeRemaining(assignment: Assignment): String = LearningRules.timeRemaining(assignment, nowMs)
 
-    fun formatTimeRemaining(assignment: Assignment, currentTimeMs: Long = nowMs): String =
-        LearningRules.timeRemaining(assignment, currentTimeMs)
+    fun getCourseWithCompletion(course: Course): Course = LearningRules.courseWithProgress(course, assignments)
 
-    fun getCourseWithCompletion(course: Course): Course =
-        LearningRules.courseWithProgress(course, assignments.value)
-
-    private fun IOException.toUserMessage(baseUrl: String): String = when (this) {
-        is ApiException -> message
-        is java.net.SocketTimeoutException ->
-            "Máy chủ không phản hồi ($baseUrl). Kiểm tra backend đã chạy và quyền truy cập mạng cục bộ (Cài đặt › Ứng dụng › Quyền)."
-        is java.net.ConnectException, is java.net.NoRouteToHostException ->
-            "Không kết nối được tới $baseUrl. Kiểm tra backend đã chạy và app đã được cấp quyền truy cập mạng cục bộ."
-        else -> "Không kết nối được tới $baseUrl. Kiểm tra backend và địa chỉ máy chủ."
+    /** Đổi lỗi thành câu dễ hiểu cho người dùng. */
+    private fun errorText(error: Exception, baseUrl: String): String {
+        if (error is ApiException) return error.message
+        if (error is java.net.SocketTimeoutException) {
+            return "Máy chủ không phản hồi ($baseUrl). Kiểm tra backend đã chạy và quyền truy cập mạng cục bộ (Cài đặt › Ứng dụng › Quyền)."
+        }
+        if (error is java.net.ConnectException || error is java.net.NoRouteToHostException) {
+            return "Không kết nối được tới $baseUrl. Kiểm tra backend đã chạy và app đã được cấp quyền truy cập mạng cục bộ."
+        }
+        return "Không kết nối được tới $baseUrl. Kiểm tra backend và địa chỉ máy chủ."
     }
 }

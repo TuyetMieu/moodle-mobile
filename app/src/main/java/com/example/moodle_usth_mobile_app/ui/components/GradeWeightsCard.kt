@@ -125,10 +125,14 @@ fun GradeWeightsCard(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     components.forEach { component ->
                         val score = component.score
-                        val (text, tone) = when {
-                            component.status == GradeStatus.GRADED && score != null -> "${formatGrade(score)} / 10" to "green"
-                            component.status == GradeStatus.IN_PROGRESS && score != null -> "In progress · ${formatGrade(score)}" to "amber"
-                            else -> "Not graded yet" to "purple"
+                        var text = "Not graded yet"
+                        var tone = "purple"
+                        if (component.status == GradeStatus.GRADED && score != null) {
+                            text = "${formatGrade(score)} / 10"
+                            tone = "green"
+                        } else if (component.status == GradeStatus.IN_PROGRESS && score != null) {
+                            text = "In progress · ${formatGrade(score)}"
+                            tone = "amber"
                         }
                         WeightDetailRow(component.category.label, text, tone)
                     }

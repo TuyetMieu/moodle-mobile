@@ -8,22 +8,30 @@ import com.example.moodle_usth_mobile_app.data.remote.ApiException
 import com.example.moodle_usth_mobile_app.data.remote.DownloadedFile
 import com.example.moodle_usth_mobile_app.data.remote.JsonMapper
 import com.example.moodle_usth_mobile_app.data.remote.MoodleApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.IOException
 
-/** Kết quả tải dữ liệu: [fromCache] = true khi không gọi được server và đang dùng bản lưu gần nhất. */
-data class LoadResult(val data: AppData, val fromCache: Boolean)
+/**
+ * Kết quả tải dữ liệu.
+ * fromCache = true: không gọi được server, đang dùng bản đã lưu.
+ * syncedAtMs: lúc dữ liệu được lấy từ server (null ở chế độ xem thử).
+ */
+class LoadResult(val data: AppData, val fromCache: Boolean, val syncedAtMs: Long?)
 
+/**
+ * Nơi duy nhất ViewModel lấy dữ liệu. Có 3 trường hợp:
+ * 1. Online: gọi server và lưu cache.
+ * 2. Mất mạng: đọc cache đã lưu.
+ * 3. Chế độ xem thử: đọc file mẫu trong assets, không cần server.
+ */
 class MoodleRepository(context: Context) {
 
     private val appContext = context.applicationContext
     val session = SessionStore(appContext)
-    private val api = MoodleApi(baseUrl = { session.baseUrl }, token = { session.token })
+    private val api = MoodleApi(session)
     private val mapper = JsonMapper()
 
-    /** Ở chế độ xem thử, các thay đổi "đánh dấu hoàn thành" chỉ giữ trong bộ nhớ: id → completedAt (null = bỏ đánh dấu). */
+    /** Ở chế độ xem thử, bài đã đánh dấu xong chỉ nhớ trong bộ nhớ: id bài → thời điểm xong (null = bỏ đánh dấu). */
     private val demoCompletions = mutableMapOf<String, Long?>()
 
     val isSignedIn: Boolean get() = session.token != null || session.demoMode
@@ -43,30 +51,42 @@ class MoodleRepository(context: Context) {
     }
 
     suspend fun logout() {
-        if (!session.demoMode) runCatching { api.logout() }
+        if (!session.demoMode) {
+            try {
+                api.logout()
+            } catch (error: Exception) {
+                // Không gọi được server cũng không sao, vẫn xoá dữ liệu trên máy.
+            }
+        }
         session.clear()
     }
 
     /**
-     * Tải toàn bộ dữ liệu. Mất mạng → trả về bản cache gần nhất (nếu có).
-     * Token hết hạn (401) → ném [ApiException] để UI đưa về màn đăng nhập.
+     * Tải toàn bộ dữ liệu. Mất mạng → dùng bản cache (nếu có).
+     * Token hết hạn (401) → ném lỗi để ViewModel đưa về màn đăng nhập.
      */
     suspend fun load(): LoadResult {
-        if (session.demoMode) return LoadResult(loadSample(), fromCache = false)
-        return try {
+        if (session.demoMode) return LoadResult(loadSample(), false, null)
+
+        try {
             val json = api.bootstrap()
-            withContext(Dispatchers.IO) { session.writeCache(json.toString()) }
-            LoadResult(mapper.appData(json), fromCache = false)
+            val now = System.currentTimeMillis()
+            session.writeCache(json.toString())
+            session.lastSyncedAtMs = now
+            return LoadResult(mapper.appData(json), false, now)
         } catch (error: ApiException) {
+            // Lỗi do server trả về (401, 500...) → không dùng cache, báo lỗi luôn.
             if (error.status == 401) session.clear()
             throw error
         } catch (error: IOException) {
-            val cached = withContext(Dispatchers.IO) { session.readCache() } ?: throw error
-            LoadResult(mapper.appData(JSONObject(cached)), fromCache = true)
+            // Lỗi mạng → thử đọc cache.
+            val cached = session.readCache() ?: throw error
+            val syncedAt = if (session.lastSyncedAtMs > 0) session.lastSyncedAtMs else null
+            return LoadResult(mapper.appData(JSONObject(cached)), true, syncedAt)
         }
     }
 
-    /** Đánh dấu hoàn thành / bỏ đánh dấu. Ở chế độ xem thử chỉ cập nhật cục bộ. */
+    /** Đánh dấu hoàn thành / bỏ đánh dấu. Ở chế độ xem thử chỉ đổi trong bộ nhớ. */
     suspend fun setCompleted(assignment: Assignment, completed: Boolean): Assignment {
         if (session.demoMode) {
             if (!completed && assignment.isGraded) {
@@ -76,7 +96,8 @@ class MoodleRepository(context: Context) {
             demoCompletions[assignment.id] = completedAt
             return assignment.copy(completedAtEpochMs = completedAt)
         }
-        return mapper.assignment(api.setCompleted(assignment.id, completed))
+        val json = api.setCompleted(assignment.id, completed)
+        return mapper.assignment(json)
     }
 
     suspend fun markNotificationRead(notificationId: String) {
@@ -85,26 +106,35 @@ class MoodleRepository(context: Context) {
 
     suspend fun downloadGradeReport(data: AppData): DownloadedFile {
         if (!session.demoMode) return api.downloadGradeReport()
-        val rows = listOf("Subject,Course code,Credits,Completed tasks,Total tasks,Accumulated grade") +
-            data.courses.map { course ->
-                val updated = LearningRules.courseWithProgress(course, data.assignments)
-                "${updated.title},${updated.code},${updated.credits},${updated.done},${updated.total},${course.grade ?: ""}"
-            }
-        return DownloadedFile("USTH-sample-grade-report.csv", "text/csv", rows.joinToString("\r\n").toByteArray())
+
+        // Chế độ xem thử: tự tạo file CSV từ dữ liệu đang có.
+        var csv = "Subject,Course code,Credits,Completed tasks,Total tasks,Accumulated grade"
+        for (course in data.courses) {
+            val updated = LearningRules.courseWithProgress(course, data.assignments)
+            val grade = if (course.grade == null) "" else course.grade.toString()
+            csv += "\r\n${updated.title},${updated.code},${updated.credits},${updated.done},${updated.total},$grade"
+        }
+        return DownloadedFile("USTH-sample-grade-report.csv", "text/csv", csv.toByteArray())
     }
 
-    /** Dữ liệu mẫu đóng gói trong assets (sinh bằng `npm run export-sample` ở backend). */
-    private suspend fun loadSample(): AppData = withContext(Dispatchers.IO) {
-        val json = JSONObject(appContext.assets.open(SAMPLE_ASSET).bufferedReader().use { it.readText() })
+    /**
+     * Dữ liệu mẫu trong assets/sample_bootstrap.json (tạo bằng `npm run export-sample` ở backend).
+     * Mọi mốc thời gian được dời theo giờ hiện tại để deadline luôn "sắp tới".
+     */
+    private fun loadSample(): AppData {
+        val text = appContext.assets.open("sample_bootstrap.json").bufferedReader().readText()
+        val json = JSONObject(text)
         val shift = System.currentTimeMillis() - json.getLong("serverTime")
-        val data = JsonMapper(timeShiftMs = shift).appData(json)
-        data.copy(assignments = data.assignments.map { assignment ->
-            if (assignment.id in demoCompletions) assignment.copy(completedAtEpochMs = demoCompletions[assignment.id])
-            else assignment
-        })
-    }
+        val data = JsonMapper(shift).appData(json)
 
-    private companion object {
-        const val SAMPLE_ASSET = "sample_bootstrap.json"
+        // Áp lại các bài người dùng đã đánh dấu trong lần xem thử này.
+        val assignments = data.assignments.map { assignment ->
+            if (demoCompletions.containsKey(assignment.id)) {
+                assignment.copy(completedAtEpochMs = demoCompletions[assignment.id])
+            } else {
+                assignment
+            }
+        }
+        return data.copy(assignments = assignments)
     }
 }

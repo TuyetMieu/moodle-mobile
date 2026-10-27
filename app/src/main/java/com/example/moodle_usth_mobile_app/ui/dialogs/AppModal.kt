@@ -28,7 +28,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,10 +48,12 @@ import com.example.moodle_usth_mobile_app.ui.theme.TextPrimary
 import com.example.moodle_usth_mobile_app.ui.theme.TextSecondary
 
 /**
- * SnackbarHostState của màn hình chính. Dialog chạy trong window riêng nên che mất snackbar ở Scaffold;
- * [AppModal] hiển thị lại cùng state này bên trong dialog để thông báo (VD: "Mark as done") vẫn thấy được.
+ * Snackbar (thông báo ngắn ở cuối màn hình) dùng chung cho cả app.
+ * Dialog nằm đè lên màn hình chính nên che mất snackbar; vì vậy [AppModal] cũng hiện snackbar này bên trong dialog.
  */
-val LocalSnackbarHostState = staticCompositionLocalOf<SnackbarHostState?> { null }
+object AppSnackbar {
+    val state = SnackbarHostState()
+}
 
 /** Khung modal chung theo thiết kế: tiêu đề + nút đóng + nội dung cuộn được. */
 @Composable
@@ -62,7 +63,6 @@ fun AppModal(
     content: @Composable ColumnScope.() -> Unit
 ) {
     val maxHeight = (LocalConfiguration.current.screenHeightDp * 0.86f).dp
-    val snackbarHostState = LocalSnackbarHostState.current
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
       Box(contentAlignment = Alignment.Center) {
         Card(
@@ -106,9 +106,7 @@ fun AppModal(
                 )
             }
         }
-        if (snackbarHostState != null) {
-            SnackbarHost(snackbarHostState, modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 16.dp))
-        }
+        SnackbarHost(AppSnackbar.state, modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 16.dp))
       }
     }
 }

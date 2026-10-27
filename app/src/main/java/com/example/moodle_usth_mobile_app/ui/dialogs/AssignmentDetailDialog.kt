@@ -28,7 +28,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,7 +41,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moodle_usth_mobile_app.data.model.AssignmentStatus
 import com.example.moodle_usth_mobile_app.data.model.formatGrade
-import com.example.moodle_usth_mobile_app.ui.DialogState
 import com.example.moodle_usth_mobile_app.ui.Formatters
 import com.example.moodle_usth_mobile_app.ui.MainViewModel
 import com.example.moodle_usth_mobile_app.ui.components.BadgeItem
@@ -61,13 +59,12 @@ fun AssignmentDetailDialog(
     viewModel: MainViewModel,
     onDismiss: () -> Unit
 ) {
-    val assignments by viewModel.assignments.collectAsState()
-    val pendingIds by viewModel.pendingAssignmentIds.collectAsState()
+    val assignments = viewModel.assignments
     val assignment = assignments.firstOrNull { it.id == assignmentId } ?: return
     val course = viewModel.findCourse(assignment.courseId)
     val status = viewModel.getAssignmentStatus(assignment)
     val isDone = status == AssignmentStatus.DONE
-    val isSaving = assignmentId in pendingIds
+    val isSaving = viewModel.savingAssignmentId == assignmentId
 
     AppModal(title = "Assignment details", onDismiss = onDismiss) {
         BadgeItem(
@@ -120,7 +117,8 @@ fun AssignmentDetailDialog(
                         color = AccentGreen
                     )
                 }
-                assignment.feedback?.let { feedback ->
+                val feedback = assignment.feedback
+                if (feedback != null) {
                     Row(verticalAlignment = Alignment.Top) {
                         Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(6.dp))
@@ -221,7 +219,7 @@ fun AssignmentDetailDialog(
             modifier = Modifier.fillMaxWidth()
         )
         TextButton(
-            onClick = { viewModel.openDialog(DialogState.ClassworkList()) },
+            onClick = { viewModel.openDialog("classwork") },
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
             Icon(Icons.AutoMirrored.Filled.FormatListBulleted, contentDescription = null, modifier = Modifier.size(16.dp))

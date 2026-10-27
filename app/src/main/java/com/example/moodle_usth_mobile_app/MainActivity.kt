@@ -1,11 +1,13 @@
 package com.example.moodle_usth_mobile_app
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -41,15 +43,10 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -58,16 +55,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.moodle_usth_mobile_app.reminders.ReminderReceiver
 import com.example.moodle_usth_mobile_app.ui.AppDestination
-import com.example.moodle_usth_mobile_app.ui.AuthState
-import com.example.moodle_usth_mobile_app.ui.DialogState
+import com.example.moodle_usth_mobile_app.ui.Formatters
 import com.example.moodle_usth_mobile_app.ui.MainViewModel
+import com.example.moodle_usth_mobile_app.ui.dialogs.AppSnackbar
 import com.example.moodle_usth_mobile_app.ui.dialogs.AssignmentDetailDialog
 import com.example.moodle_usth_mobile_app.ui.dialogs.ClassworkListDialog
 import com.example.moodle_usth_mobile_app.ui.dialogs.CourseInfoDialog
 import com.example.moodle_usth_mobile_app.ui.dialogs.GradeReportDialog
-import com.example.moodle_usth_mobile_app.ui.dialogs.LocalSnackbarHostState
 import com.example.moodle_usth_mobile_app.ui.dialogs.NotificationsDialog
 import com.example.moodle_usth_mobile_app.ui.dialogs.PlannerDialog
 import com.example.moodle_usth_mobile_app.ui.dialogs.SemesterOverviewDialog
@@ -90,46 +86,71 @@ import com.example.moodle_usth_mobile_app.ui.theme.TextPrimary
 import com.example.moodle_usth_mobile_app.ui.theme.TextSecondary
 
 class MainActivity : ComponentActivity() {
+
+    // ViewModel giữ dữ liệu của cả app (không bị mất khi xoay màn hình).
+    private val viewModel: MainViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Thiết kế chỉ có giao diện sáng: cố định icon thanh trạng thái màu tối kể cả khi máy bật dark mode.
+        if (savedInstanceState == null) openAssignmentFrom(intent)
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.light(android.graphics.Color.WHITE, android.graphics.Color.WHITE)
         )
         setContent {
             MoodleusthmobileappTheme(darkTheme = false) {
-                MoodleAppRoot()
+                MoodleAppRoot(viewModel)
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.onAppResumed()
+    }
+
+    /** Chạm thông báo nhắc hạn nộp khi app đang mở (launchMode="singleTop"). */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        openAssignmentFrom(intent)
+    }
+
+    /** Nếu app được mở từ thông báo nhắc hạn nộp thì mở luôn bài tập đó. */
+    private fun openAssignmentFrom(intent: Intent?) {
+        if (intent == null) return
+        val assignmentId = intent.getStringExtra(ReminderReceiver.EXTRA_ASSIGNMENT_ID) ?: return
+        // Xoá đi để khi xoay màn hình không mở lại lần nữa.
+        intent.removeExtra(ReminderReceiver.EXTRA_ASSIGNMENT_ID)
+        viewModel.openAssignment(assignmentId)
     }
 }
 
 @Composable
-fun MoodleAppRoot(
-    viewModel: MainViewModel = viewModel()
-) {
-    val authState by viewModel.authState.collectAsState()
-    when (authState) {
-        AuthState.SIGNED_OUT -> LoginScreen(viewModel)
-        AuthState.SIGNED_IN -> SignedInApp(viewModel)
+fun MoodleAppRoot(viewModel: MainViewModel) {
+    if (viewModel.isLoggedIn) {
+        SignedInApp(viewModel)
+    } else {
+        LoginScreen(viewModel)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SignedInApp(viewModel: MainViewModel) {
-    val currentDestination by viewModel.currentDestination.collectAsState()
-    val selectedCourse by viewModel.selectedCourse.collectAsState()
-    val assignments by viewModel.assignments.collectAsState()
-    val courses by viewModel.courses.collectAsState()
-    val activeDialog by viewModel.activeDialog.collectAsState()
-    val loadState by viewModel.loadState.collectAsState()
-    val data by viewModel.data.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
+    val currentDestination = viewModel.currentDestination
+    val selectedCourse = viewModel.selectedCourse
+    val assignments = viewModel.assignments
+    val courses = viewModel.courses
+    val data = viewModel.data
 
-    LaunchedEffect(Unit) {
-        viewModel.messages.collect { snackbarHostState.showSnackbar(it) }
+    // Mỗi khi ViewModel có thông báo mới → hiện snackbar, hiện xong thì xoá.
+    val message = viewModel.message
+    LaunchedEffect(message) {
+        if (message != null) {
+            AppSnackbar.state.showSnackbar(message)
+            viewModel.message = null
+        }
     }
 
     // Back: đóng trang chi tiết môn học trước, rồi về Home.
@@ -146,12 +167,11 @@ private fun SignedInApp(viewModel: MainViewModel) {
         AppDestinationInfo(AppDestination.PROFILE, "Profile", Icons.Default.Person)
     )
 
-    CompositionLocalProvider(LocalSnackbarHostState provides snackbarHostState) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = SurfaceLight,
         // Khi đang mở dialog, AppModal tự hiển thị snackbar bên trong nên ẩn bản ở màn nền.
-        snackbarHost = { if (activeDialog == null) SnackbarHost(snackbarHostState) },
+        snackbarHost = { if (viewModel.dialogName == "") SnackbarHost(AppSnackbar.state) },
         bottomBar = {
           Column {
             HorizontalDivider(color = CardBorderLight)
@@ -191,23 +211,29 @@ private fun SignedInApp(viewModel: MainViewModel) {
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            if (data != null && (loadState.isOffline || viewModel.isDemoMode)) {
+            if (data != null && (viewModel.isOffline || viewModel.isDemoMode)) {
+                val syncedAtMs = viewModel.lastSyncedAtMs
                 StatusBanner(
                     isDemo = viewModel.isDemoMode,
+                    syncedAtText = if (syncedAtMs != null) Formatters.syncedAt(syncedAtMs, viewModel.nowMs) else null,
                     onRetry = { viewModel.refresh() }
                 )
             }
 
-            val currentData = data
-            when {
-                currentData == null && loadState.error != null -> ErrorState(
-                    message = loadState.error.orEmpty(),
+            val loadError = viewModel.loadError
+            if (data == null && loadError != null) {
+                // Chưa có dữ liệu và tải bị lỗi
+                ErrorState(
+                    message = loadError,
                     onRetry = { viewModel.refresh(initial = true) },
                     onLogout = { viewModel.logout() }
                 )
-                currentData == null -> LoadingState()
-                else -> PullToRefreshBox(
-                    isRefreshing = loadState.isRefreshing,
+            } else if (data == null) {
+                // Đang tải lần đầu
+                LoadingState()
+            } else {
+                PullToRefreshBox(
+                    isRefreshing = viewModel.isRefreshing,
                     onRefresh = { viewModel.refresh() },
                     modifier = Modifier.fillMaxSize()
                 ) {
@@ -247,23 +273,23 @@ private fun SignedInApp(viewModel: MainViewModel) {
             }
         }
 
+        // Dialog đang mở (nếu có). dialogArg là id bài tập / id môn học / bộ lọc.
         val onDismiss = { viewModel.closeDialog() }
-        when (val dialog = activeDialog) {
-            is DialogState.AssignmentDetail -> AssignmentDetailDialog(dialog.assignmentId, viewModel, onDismiss)
-            is DialogState.ClassworkList -> ClassworkListDialog(dialog.filter, viewModel, onDismiss)
-            is DialogState.Notifications -> NotificationsDialog(viewModel, onDismiss)
-            is DialogState.CourseInfo -> CourseInfoDialog(dialog.courseId, viewModel, onDismiss)
-            is DialogState.CalendarPlanner -> PlannerDialog(viewModel, onDismiss)
-            is DialogState.GradeReport -> GradeReportDialog(viewModel, onDismiss)
-            is DialogState.SemesterOverview -> SemesterOverviewDialog(viewModel, onDismiss)
-            null -> {}
+        val arg = viewModel.dialogArg
+        when (viewModel.dialogName) {
+            "assignment" -> AssignmentDetailDialog(arg, viewModel, onDismiss)
+            "classwork" -> ClassworkListDialog(if (arg == "") "todo" else arg, viewModel, onDismiss)
+            "notifications" -> NotificationsDialog(viewModel, onDismiss)
+            "courseInfo" -> CourseInfoDialog(arg, viewModel, onDismiss)
+            "planner" -> PlannerDialog(viewModel, onDismiss)
+            "gradeReport" -> GradeReportDialog(viewModel, onDismiss)
+            "semester" -> SemesterOverviewDialog(viewModel, onDismiss)
         }
-    }
     }
 }
 
 @Composable
-private fun StatusBanner(isDemo: Boolean, onRetry: () -> Unit) {
+private fun StatusBanner(isDemo: Boolean, syncedAtText: String?, onRetry: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -281,6 +307,7 @@ private fun StatusBanner(isDemo: Boolean, onRetry: () -> Unit) {
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = if (isDemo) "Chế độ xem thử · dữ liệu mẫu, không kết nối máy chủ"
+            else if (syncedAtText != null) "Ngoại tuyến · dữ liệu lúc $syncedAtText. Chạm để thử lại."
             else "Ngoại tuyến · đang xem dữ liệu đã lưu. Chạm để thử lại.",
             fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold,

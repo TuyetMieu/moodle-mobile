@@ -7,12 +7,13 @@ import { openDatabase, resetDatabase } from "../src/db.js"
 const NOW = new Date(2026, 9, 25, 10, 0, 0).getTime()
 const HOUR = 3_600_000
 
+let db
 let server
 let baseUrl
 let clock = NOW
 
 before(async () => {
-  const db = openDatabase(":memory:")
+  db = openDatabase(":memory:")
   resetDatabase(db, NOW)
   server = createServer(createApp(db, { clock: () => clock, allowReset: true }))
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve))
@@ -176,5 +177,56 @@ describe("misc", () => {
     const { status, body } = await call("GET", "/api/v1/nope")
     assert.equal(status, 404)
     assert.equal(body.error.code, "not_found")
+  })
+
+  test("malformed path parameters are a 400, not a crash", async () => {
+    const token = await login()
+    const { status, body } = await call("GET", "/api/v1/courses/%E0%A4%A", { token })
+    assert.equal(status, 400)
+    assert.equal(body.error.code, "invalid_path")
+  })
+
+  test("bootstrap course data matches the course endpoints", async () => {
+    const token = await login()
+    const { body } = await call("GET", "/api/v1/bootstrap", { token })
+    for (const course of body.courses) {
+      const detail = (await call("GET", `/api/v1/courses/${course.id}`, { token })).body
+      assert.deepEqual(course.gradeComponents, detail.gradeComponents)
+      assert.deepEqual([course.done, course.total, course.grade], [detail.done, detail.total, detail.grade])
+    }
+  })
+
+  test("expired sessions are purged on the next login", async () => {
+    await login()
+    clock = NOW + 31 * 24 * HOUR
+    await login()
+    const stale = db.prepare("SELECT COUNT(*) AS n FROM sessions WHERE expires_at <= ?").get(clock).n
+    assert.equal(stale, 0)
+    clock = NOW
+  })
+})
+
+// Chạy cuối cùng vì khoá tạm tài khoản ba22-087.
+describe("login throttling", () => {
+  test("locks an account after 5 wrong passwords, then unlocks after the window", async () => {
+    const attempt = (password) => call("POST", "/api/v1/auth/login", { body: { username: "ba22-087", password } })
+    for (let i = 0; i < 5; i++) assert.equal((await attempt("wrong")).status, 401)
+
+    const locked = await attempt("usth2025")
+    assert.equal(locked.status, 429)
+    assert.equal(locked.body.error.code, "too_many_attempts")
+    assert.ok(Number(locked.headers.get("retry-after")) > 0)
+
+    clock = NOW + 16 * 60 * 1000
+    assert.equal((await attempt("usth2025")).status, 200)
+    clock = NOW
+  })
+
+  test("a successful login resets the failure count", async () => {
+    const attempt = (password) => call("POST", "/api/v1/auth/login", { body: { username: "ba22-041", password } })
+    for (let i = 0; i < 4; i++) await attempt("wrong")
+    assert.equal((await attempt("usth2025")).status, 200)
+    for (let i = 0; i < 4; i++) await attempt("wrong")
+    assert.equal((await attempt("usth2025")).status, 200)
   })
 })

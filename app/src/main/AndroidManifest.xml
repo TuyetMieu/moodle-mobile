@@ -5,6 +5,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Android 17+: bắt buộc để gọi backend ở địa chỉ mạng cục bộ (10.0.2.2, 192.168.x.x). -->
     <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
+    <!-- Nhắc hạn nộp: hiện thông báo (Android 13+ phải xin lúc chạy) và đặt lại lịch nhắc sau khi khởi động lại máy. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -20,6 +23,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.Moodleusthmobileapp"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -28,6 +32,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Hiện thông báo nhắc hạn nộp; đặt lại lịch nhắc khi máy khởi động lại hoặc app được cập nhật. -->
+        <receiver
+            android:name=".reminders.ReminderReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

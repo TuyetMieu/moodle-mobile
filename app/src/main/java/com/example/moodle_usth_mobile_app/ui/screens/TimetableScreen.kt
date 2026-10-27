@@ -38,7 +38,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -74,60 +73,111 @@ private val VI = Locale("vi", "VN")
 private val WEEKDAY_LABELS = listOf("CN", "T2", "T3", "T4", "T5", "T6", "T7")
 private val MONDAY_FIRST = listOf(1, 2, 3, 4, 5, 6, 0)
 
-/** Các phép tính ngày cho thời khóa biểu (tuần bắt đầu từ thứ Hai, theo giờ thiết bị). */
+/** Các phép tính ngày cho thời khóa biểu (tuần bắt đầu từ thứ Hai, theo giờ của điện thoại). */
 private object Dates {
-    fun startOfDay(ms: Long): Long = Calendar.getInstance().apply {
-        timeInMillis = ms
-        set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
-    }.timeInMillis
 
-    fun shiftDays(ms: Long, days: Int): Long =
-        Calendar.getInstance().apply { timeInMillis = ms; add(Calendar.DAY_OF_MONTH, days) }.timeInMillis
-
-    /** 0 = Chủ nhật … 6 = Thứ bảy (giống trường weekday của API). */
-    fun weekday(ms: Long): Int = Calendar.getInstance().apply { timeInMillis = ms }.get(Calendar.DAY_OF_WEEK) - 1
-
-    fun dayOfMonth(ms: Long): Int = Calendar.getInstance().apply { timeInMillis = ms }.get(Calendar.DAY_OF_MONTH)
-
-    fun month(ms: Long): Int = Calendar.getInstance().apply { timeInMillis = ms }.let { it.get(Calendar.YEAR) * 12 + it.get(Calendar.MONTH) }
-
-    fun sameDay(a: Long, b: Long) = startOfDay(a) == startOfDay(b)
-
-    fun weekDates(ms: Long): List<Long> {
-        val monday = shiftDays(startOfDay(ms), -((weekday(ms) + 6) % 7))
-        return List(7) { shiftDays(monday, it) }
+    private fun calendarAt(ms: Long): Calendar {
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = ms
+        return calendar
     }
 
-    /** Lưới tháng: đủ số tuần (T2→CN) để chứa trọn tháng của [ms]. */
+    /** 0 giờ 00 của ngày chứa [ms]. */
+    fun startOfDay(ms: Long): Long {
+        val calendar = calendarAt(ms)
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        return calendar.timeInMillis
+    }
+
+    fun shiftDays(ms: Long, days: Int): Long {
+        val calendar = calendarAt(ms)
+        calendar.add(Calendar.DAY_OF_MONTH, days)
+        return calendar.timeInMillis
+    }
+
+    /** 0 = Chủ nhật … 6 = Thứ bảy (giống trường weekday của API). */
+    fun weekday(ms: Long): Int = calendarAt(ms).get(Calendar.DAY_OF_WEEK) - 1
+
+    fun dayOfMonth(ms: Long): Int = calendarAt(ms).get(Calendar.DAY_OF_MONTH)
+
+    /** Số tháng tính từ năm 0, dùng để so sánh hai ngày có cùng tháng không. */
+    fun month(ms: Long): Int {
+        val calendar = calendarAt(ms)
+        return calendar.get(Calendar.YEAR) * 12 + calendar.get(Calendar.MONTH)
+    }
+
+    fun sameDay(a: Long, b: Long): Boolean = startOfDay(a) == startOfDay(b)
+
+    /** 7 ngày từ thứ Hai đến Chủ nhật của tuần chứa [ms]. */
+    fun weekDates(ms: Long): List<Long> {
+        val daysSinceMonday = (weekday(ms) + 6) % 7
+        val monday = shiftDays(startOfDay(ms), -daysSinceMonday)
+        val result = mutableListOf<Long>()
+        for (i in 0 until 7) result.add(shiftDays(monday, i))
+        return result
+    }
+
+    /** Các ô của lịch tháng: đủ số tuần (T2 → CN) để chứa trọn tháng của [ms]. */
     fun monthDates(ms: Long): List<Long> {
-        val first = Calendar.getInstance().apply { timeInMillis = startOfDay(ms); set(Calendar.DAY_OF_MONTH, 1) }
+        val first = calendarAt(startOfDay(ms))
+        first.set(Calendar.DAY_OF_MONTH, 1)
         val daysInMonth = first.getActualMaximum(Calendar.DAY_OF_MONTH)
-        val leading = (weekday(first.timeInMillis) + 6) % 7
-        val cells = ((leading + daysInMonth + 6) / 7) * 7
-        val start = shiftDays(first.timeInMillis, -leading)
-        return List(cells) { shiftDays(start, it) }
+        val emptyBefore = (weekday(first.timeInMillis) + 6) % 7 // số ô trống trước ngày 1
+        val cellCount = ((emptyBefore + daysInMonth + 6) / 7) * 7 // làm tròn lên đủ tuần
+        val start = shiftDays(first.timeInMillis, -emptyBefore)
+        val result = mutableListOf<Long>()
+        for (i in 0 until cellCount) result.add(shiftDays(start, i))
+        return result
     }
 
     /** Lùi/tiến [amount] tháng, giữ ngày trong tháng nếu được (31/1 → 28/2). */
-    fun shiftMonths(ms: Long, amount: Int): Long = Calendar.getInstance().apply {
-        timeInMillis = ms
-        val day = get(Calendar.DAY_OF_MONTH)
-        set(Calendar.DAY_OF_MONTH, 1)
-        add(Calendar.MONTH, amount)
-        set(Calendar.DAY_OF_MONTH, minOf(day, getActualMaximum(Calendar.DAY_OF_MONTH)))
-    }.timeInMillis
+    fun shiftMonths(ms: Long, amount: Int): Long {
+        val calendar = calendarAt(ms)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+        calendar.set(Calendar.DAY_OF_MONTH, 1)
+        calendar.add(Calendar.MONTH, amount)
+        val lastDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+        calendar.set(Calendar.DAY_OF_MONTH, if (day < lastDay) day else lastDay)
+        return calendar.timeInMillis
+    }
 
+    /** Thời điểm "HH:mm" của ngày [dayMs]. */
     fun at(dayMs: Long, time: String): Long {
-        val (h, m) = time.split(":").map { it.toInt() }
-        return Calendar.getInstance().apply {
-            timeInMillis = startOfDay(dayMs); set(Calendar.HOUR_OF_DAY, h); set(Calendar.MINUTE, m)
-        }.timeInMillis
+        val parts = time.split(":")
+        val calendar = calendarAt(startOfDay(dayMs))
+        calendar.set(Calendar.HOUR_OF_DAY, parts[0].toInt())
+        calendar.set(Calendar.MINUTE, parts[1].toInt())
+        return calendar.timeInMillis
     }
 }
 
-private fun ClassSession.hours(): Double {
-    fun minutes(t: String) = t.split(":").let { it[0].toInt() * 60 + it[1].toInt() }
-    return (minutes(end) - minutes(start)) / 60.0
+/** Đổi "HH:mm" thành số phút trong ngày. */
+private fun toMinutes(time: String): Int {
+    val parts = time.split(":")
+    return parts[0].toInt() * 60 + parts[1].toInt()
+}
+
+/** Số giờ của một buổi học. */
+private fun sessionHours(session: ClassSession): Double = (toMinutes(session.end) - toMinutes(session.start)) / 60.0
+
+/** Màu của từng môn có buổi học trong ngày (để vẽ các chấm màu trên lịch tháng). */
+private fun courseTones(sessions: List<ClassSession>, courses: List<Course>): List<String> {
+    val tones = mutableListOf<String>()
+    for (session in sessions) {
+        val course = courses.find { it.id == session.courseId }
+        if (course != null) tones.add(course.tone)
+    }
+    return tones
+}
+
+/** Tổng số giờ của nhiều buổi học. */
+private fun totalHoursOf(sessions: List<ClassSession>): Double {
+    var total = 0.0
+    for (session in sessions) total += sessionHours(session)
+    return total
 }
 
 private fun formatHours(hours: Double): String =
@@ -139,14 +189,14 @@ fun TimetableScreen(
     onCourseClick: (Course) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val selectedDateMs by viewModel.timetableSelectedDateMs.collectAsState()
-    val calendarView by viewModel.timetableCalendarView.collectAsState()
-    val courses by viewModel.courses.collectAsState()
-    val classSessions by viewModel.classSessions.collectAsState()
-    val data by viewModel.data.collectAsState()
+    val selectedDateMs = viewModel.timetableSelectedDateMs
+    val calendarView = viewModel.timetableCalendarView
+    val courses = viewModel.courses
+    val classSessions = viewModel.classSessions
+    val data = viewModel.data
     val nowMs = viewModel.nowMs
 
-    val semesterStart = data?.semesterStartsAtEpochMs?.let(Dates::startOfDay) ?: Long.MIN_VALUE
+    val semesterStart = if (data != null) Dates.startOfDay(data.semesterStartsAtEpochMs) else Long.MIN_VALUE
     val semesterEnd = data?.semesterEndsAtEpochMs ?: Long.MAX_VALUE
 
     /** Buổi học của một ngày: lịch lặp hằng tuần, chỉ trong thời gian học kỳ. */
@@ -160,13 +210,14 @@ fun TimetableScreen(
     val isMonth = calendarView == "month"
     val days = if (isMonth) Dates.monthDates(selectedDateMs) else Dates.weekDates(selectedDateMs)
     val periodDays = if (isMonth) days.filter { Dates.month(it) == Dates.month(selectedDateMs) } else days
-    val periodSessions = periodDays.flatMap(::sessionsFor)
-    val totalHours = periodSessions.sumOf { it.hours() }
+    val periodSessions = mutableListOf<ClassSession>()
+    for (day in periodDays) periodSessions.addAll(sessionsFor(day))
+    val totalHours = totalHoursOf(periodSessions)
     val isCurrentPeriod = if (isMonth) Dates.month(selectedDateMs) == Dates.month(nowMs)
     else Dates.sameDay(days.first(), Dates.weekDates(nowMs).first())
 
     val daySessions = sessionsFor(selectedDateMs)
-    val dayHours = daySessions.sumOf { it.hours() }
+    val dayHours = totalHoursOf(daySessions)
     val isToday = Dates.sameDay(selectedDateMs, nowMs)
     val nextSession = daySessions.firstOrNull { Dates.at(selectedDateMs, it.end) > nowMs }
 
@@ -194,7 +245,7 @@ fun TimetableScreen(
                 modifier = Modifier
                     .clip(RoundedCornerShape(20.dp))
                     .background(if (isToday) Color(0xFFF1F5F9) else Color.White)
-                    .clickable(enabled = !isToday) { viewModel.setTimetableDate(nowMs) }
+                    .clickable(enabled = !isToday) { viewModel.timetableSelectedDateMs = nowMs }
                     .padding(horizontal = 14.dp, vertical = 9.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -271,7 +322,7 @@ fun TimetableScreen(
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
                                     .background(if (selected) Color.White else Color.Transparent)
-                                    .clickable { viewModel.setTimetableCalendarView(id) }
+                                    .clickable { viewModel.timetableCalendarView = id }
                                     .padding(vertical = 7.dp),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -294,12 +345,12 @@ fun TimetableScreen(
                             modifier = Modifier.weight(1f)
                         )
                         IconButton(onClick = {
-                            viewModel.setTimetableDate(if (isMonth) Dates.shiftMonths(selectedDateMs, -1) else Dates.shiftDays(selectedDateMs, -7))
+                            viewModel.timetableSelectedDateMs = if (isMonth) Dates.shiftMonths(selectedDateMs, -1) else Dates.shiftDays(selectedDateMs, -7)
                         }) {
                             Icon(Icons.Default.ChevronLeft, contentDescription = if (isMonth) "Tháng trước" else "Tuần trước", tint = TextPrimary)
                         }
                         IconButton(onClick = {
-                            viewModel.setTimetableDate(if (isMonth) Dates.shiftMonths(selectedDateMs, 1) else Dates.shiftDays(selectedDateMs, 7))
+                            viewModel.timetableSelectedDateMs = if (isMonth) Dates.shiftMonths(selectedDateMs, 1) else Dates.shiftDays(selectedDateMs, 7)
                         }) {
                             Icon(Icons.Default.ChevronRight, contentDescription = if (isMonth) "Tháng sau" else "Tuần sau", tint = TextPrimary)
                         }
@@ -318,7 +369,10 @@ fun TimetableScreen(
                                 )
                             }
                         }
-                        days.chunked(7).forEach { week ->
+                        // Chia các ô thành từng hàng 7 ngày.
+                        val weekCount = days.size / 7
+                        for (weekIndex in 0 until weekCount) {
+                            val week = days.subList(weekIndex * 7, weekIndex * 7 + 7)
                             Row(modifier = Modifier.fillMaxWidth()) {
                                 week.forEach { day ->
                                     MonthDayCell(
@@ -327,8 +381,8 @@ fun TimetableScreen(
                                         selected = Dates.sameDay(day, selectedDateMs),
                                         today = Dates.sameDay(day, nowMs),
                                         outside = Dates.month(day) != Dates.month(selectedDateMs),
-                                        tones = sessionsFor(day).mapNotNull { s -> courses.firstOrNull { it.id == s.courseId }?.tone },
-                                        onClick = { viewModel.setTimetableDate(day) }
+                                        tones = courseTones(sessionsFor(day), courses),
+                                        onClick = { viewModel.timetableSelectedDateMs = day }
                                     )
                                 }
                             }
@@ -352,7 +406,7 @@ fun TimetableScreen(
                                     selected = Dates.sameDay(day, selectedDateMs),
                                     today = Dates.sameDay(day, nowMs),
                                     hasClasses = sessionsFor(day).isNotEmpty(),
-                                    onClick = { viewModel.setTimetableDate(day) }
+                                    onClick = { viewModel.timetableSelectedDateMs = day }
                                 )
                             }
                         }
@@ -393,22 +447,30 @@ fun TimetableScreen(
 
                 if (daySessions.isEmpty()) {
                     // Gợi ý ngày gần nhất phía sau có lịch học (trong vòng 2 tuần).
-                    val nextDay = (1..14).map { Dates.shiftDays(selectedDateMs, it) }.firstOrNull { sessionsFor(it).isNotEmpty() }
+                    var nextDay: Long? = null
+                    for (i in 1..14) {
+                        val day = Dates.shiftDays(selectedDateMs, i)
+                        if (sessionsFor(day).isNotEmpty()) {
+                            nextDay = day
+                            break
+                        }
+                    }
                     EmptyDayCard(
-                        nextDayLabel = nextDay?.let { "Xem lịch ${fullDate.format(Date(it))}" },
-                        onNextDay = { nextDay?.let(viewModel::setTimetableDate) }
+                        nextDayLabel = if (nextDay != null) "Xem lịch ${fullDate.format(Date(nextDay))}" else null,
+                        onNextDay = { if (nextDay != null) viewModel.timetableSelectedDateMs = nextDay }
                     )
                 } else {
-                    daySessions.forEach { session ->
-                        val course = courses.firstOrNull { it.id == session.courseId } ?: return@forEach
+                    for (session in daySessions) {
+                        val course = courses.find { it.id == session.courseId }
+                        if (course == null) continue
                         val start = Dates.at(selectedDateMs, session.start)
                         val end = Dates.at(selectedDateMs, session.end)
                         SessionCard(
                             session = session,
                             course = course,
                             finished = end <= nowMs,
-                            live = nowMs in start until end,
-                            upNext = isToday && nextSession?.id == session.id && start > nowMs,
+                            live = nowMs >= start && nowMs < end,
+                            upNext = isToday && nextSession != null && nextSession.id == session.id && start > nowMs,
                             onClick = { onCourseClick(course) }
                         )
                     }
@@ -591,7 +653,7 @@ private fun SessionCard(
             Spacer(modifier = Modifier.height(6.dp))
             Box(modifier = Modifier.width(2.dp).height(18.dp).background(toneLightColor(course.tone)))
             Spacer(modifier = Modifier.height(6.dp))
-            Text(text = "${formatHours(session.hours())} giờ", fontSize = 10.sp, color = TextSecondary)
+            Text(text = "${formatHours(sessionHours(session))} giờ", fontSize = 10.sp, color = TextSecondary)
         }
         Spacer(modifier = Modifier.width(8.dp))
         Card(

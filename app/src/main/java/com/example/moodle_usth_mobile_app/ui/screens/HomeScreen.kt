@@ -23,7 +23,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,7 +31,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moodle_usth_mobile_app.data.model.Course
-import com.example.moodle_usth_mobile_app.ui.DialogState
 import com.example.moodle_usth_mobile_app.ui.MainViewModel
 import com.example.moodle_usth_mobile_app.ui.components.AppHeader
 import com.example.moodle_usth_mobile_app.ui.components.AssignmentRow
@@ -53,7 +51,7 @@ fun HomeScreen(
     onCourseClick: (Course) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val profile by viewModel.profile.collectAsState()
+    val profile = viewModel.profile
     val firstName = profile?.shortName.orEmpty()
     val summary = viewModel.getStudySummary()
     val pendingAssignments = assignments
@@ -61,8 +59,8 @@ fun HomeScreen(
         .sortedBy { it.dueAtEpochMs }
 
     val nextAssignment = pendingAssignments.firstOrNull()
-    val nextStatus = nextAssignment?.let { viewModel.getAssignmentStatus(it) }
-        ?: com.example.moodle_usth_mobile_app.data.model.AssignmentStatus.DONE
+    val nextStatus = if (nextAssignment != null) viewModel.getAssignmentStatus(nextAssignment)
+    else com.example.moodle_usth_mobile_app.data.model.AssignmentStatus.DONE
 
     Column(
         modifier = modifier
@@ -74,7 +72,7 @@ fun HomeScreen(
             firstName = firstName,
             initials = profile?.initials.orEmpty(),
             urgentCount = summary.urgentCount,
-            onNotificationClick = { viewModel.openDialog(DialogState.Notifications) }
+            onNotificationClick = { viewModel.openDialog("notifications") }
         )
 
         // Scrollable content
@@ -91,7 +89,7 @@ fun HomeScreen(
                 urgentCount = summary.urgentCount,
                 recentDoneCount = summary.recentDoneCount,
                 onFilterClick = { filter ->
-                    viewModel.openDialog(DialogState.ClassworkList(filter))
+                    viewModel.openDialog("classwork", filter)
                 }
             )
 
@@ -102,9 +100,9 @@ fun HomeScreen(
                 status = nextStatus,
                 onViewTaskClick = {
                     if (nextAssignment != null) {
-                        viewModel.openDialog(DialogState.AssignmentDetail(nextAssignment.id))
+                        viewModel.openDialog("assignment", nextAssignment.id)
                     } else {
-                        viewModel.openDialog(DialogState.ClassworkList("done"))
+                        viewModel.openDialog("classwork", "done")
                     }
                 }
             )
@@ -115,7 +113,7 @@ fun HomeScreen(
                     title = "Up next",
                     detailCount = String.format("%02d", pendingAssignments.size),
                     actionText = "All assignments",
-                    onActionClick = { viewModel.openDialog(DialogState.ClassworkList("todo")) }
+                    onActionClick = { viewModel.openDialog("classwork", "todo") }
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -152,7 +150,7 @@ fun HomeScreen(
                                 timeRemainingText = viewModel.formatTimeRemaining(assignment),
                                 showCourse = true,
                                 onClick = {
-                                    viewModel.openDialog(DialogState.AssignmentDetail(assignment.id))
+                                    viewModel.openDialog("assignment", assignment.id)
                                 }
                             )
                         }

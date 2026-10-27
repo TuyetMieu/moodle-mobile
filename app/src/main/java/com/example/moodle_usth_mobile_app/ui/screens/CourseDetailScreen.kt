@@ -39,7 +39,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -67,7 +66,6 @@ import com.example.moodle_usth_mobile_app.data.model.AssignmentCategory
 import com.example.moodle_usth_mobile_app.data.model.AssignmentStatus
 import com.example.moodle_usth_mobile_app.data.model.Course
 import com.example.moodle_usth_mobile_app.data.repository.LearningRules
-import com.example.moodle_usth_mobile_app.ui.DialogState
 import com.example.moodle_usth_mobile_app.ui.Formatters
 import com.example.moodle_usth_mobile_app.ui.MainViewModel
 import com.example.moodle_usth_mobile_app.ui.components.AssignmentRow
@@ -95,7 +93,7 @@ fun CourseDetailScreen(
     modifier: Modifier = Modifier
 ) {
     var selectedTab by rememberSaveable(course.id) { mutableStateOf("Stream") }
-    val assignments by viewModel.assignments.collectAsState()
+    val assignments = viewModel.assignments
     val courseAssignments = assignments.filter { it.courseId == course.id }
     val pending = LearningRules.pending(assignments, course.id)
 
@@ -116,7 +114,7 @@ fun CourseDetailScreen(
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại", tint = TextPrimary)
             }
             Text(text = "Course details", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-            IconButton(onClick = { viewModel.openDialog(DialogState.CourseInfo(course.id)) }) {
+            IconButton(onClick = { viewModel.openDialog("courseInfo", course.id) }) {
                 Icon(Icons.Default.MoreHoriz, contentDescription = "Thông tin môn học", tint = TextPrimary)
             }
         }
@@ -263,7 +261,7 @@ private fun StreamTab(
                     status = viewModel.getAssignmentStatus(assignment),
                     timeRemainingText = viewModel.formatTimeRemaining(assignment),
                     showCourse = false,
-                    onClick = { viewModel.openDialog(DialogState.AssignmentDetail(assignment.id)) }
+                    onClick = { viewModel.openDialog("assignment", assignment.id) }
                 )
             }
         }
@@ -273,7 +271,7 @@ private fun StreamTab(
         AnnouncementCard(
             announcement = announcement,
             nowMs = viewModel.nowMs,
-            onResourcesClick = { viewModel.openDialog(DialogState.CourseInfo(course.id)) }
+            onResourcesClick = { viewModel.openDialog("courseInfo", course.id) }
         )
     }
 }
@@ -391,7 +389,7 @@ private fun ClassworkTab(course: Course, courseAssignments: List<Assignment>, vi
                             timeRemainingText = viewModel.formatTimeRemaining(assignment),
                             showCourse = false,
                             compact = status == AssignmentStatus.DONE,
-                            onClick = { viewModel.openDialog(DialogState.AssignmentDetail(assignment.id)) }
+                            onClick = { viewModel.openDialog("assignment", assignment.id) }
                         )
                     }
                 }
@@ -452,7 +450,7 @@ private fun GradeWeightsTab(course: Course, viewModel: MainViewModel) {
             Row(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .clickable { viewModel.openDialog(DialogState.GradeReport) }
+                    .clickable { viewModel.openDialog("gradeReport") }
                     .padding(vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {

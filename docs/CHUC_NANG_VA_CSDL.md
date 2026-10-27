@@ -51,7 +51,9 @@ Mở app trên emulator (mặc định gọi `http://10.0.2.2:8080`). Tài kho�
 | Giữ phiên | Mở lại app vào thẳng màn chính. Token hết hạn/không hợp lệ (401) → về màn đăng nhập kèm thông báo. |
 | Xem thử (demo) | Nút "Xem thử với dữ liệu mẫu": dùng `assets/sample_bootstrap.json`, mọi mốc thời gian được dời theo giờ hiện tại; đánh dấu hoàn thành chỉ lưu tạm trong bộ nhớ. Có banner vàng báo chế độ xem thử. |
 | Ngoại tuyến | Mỗi lần tải thành công, bootstrap được cache vào file. Mất mạng → hiển thị bản cache + banner đỏ "Ngoại tuyến · chạm để thử lại". Chưa có cache → màn lỗi với nút *Thử lại* / *Đăng xuất*. |
-| Làm mới | Kéo xuống (pull-to-refresh) ở mọi màn hình chính. |
+| Làm mới | Kéo xuống (pull-to-refresh) ở mọi màn hình chính. Quay lại app sau hơn 5 phút (hoặc khi đang ngoại tuyến) thì tự đồng bộ lại; làm mới thất bại khi đã có dữ liệu → giữ màn hình và báo lỗi bằng snackbar. |
+| Thời điểm đồng bộ | Banner ngoại tuyến và thẻ trạng thái ở Profile hiện "dữ liệu lúc 14:05 hôm nay" / "14:05, 24/10". |
+| Chặn dò mật khẩu | Sai mật khẩu 5 lần trong 15 phút → server trả 429, app hiện "Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau N phút." |
 | Đăng xuất | Ở Profile, có hộp thoại xác nhận; xoá token, cache và gọi `POST /auth/logout`. |
 
 ### 2.2. Home
@@ -91,6 +93,7 @@ Phần đầu: ảnh môn, mã môn, giảng viên, vòng tiến độ %, số b
 
 ### 2.6. Danh sách bài tập "My classwork" (dialog)
 
+- Ô tìm kiếm theo tên bài hoặc tên môn (không phân biệt hoa/thường); số đếm trên các tab tính theo từ khoá.
 - Tab trạng thái *To do / Due soon / Done* kèm số lượng; lọc theo môn ("All classes" hoặc từng môn).
 - Tab *Done* chia "Gần đây · 14 ngày" (khớp với ô *Recent done* ở Home) và "Trước đó", sắp xếp mới nhất trước.
 - Trạng thái rỗng có lời nhắn riêng cho từng tab.
@@ -103,7 +106,7 @@ Phần đầu: ảnh môn, mã môn, giảng viên, vòng tiến độ %, số b
 - **Lịch trong ngày**: số buổi + tổng giờ; mỗi buổi có giờ bắt đầu/kết thúc, thời lượng, loại (Lý thuyết/Thực hành), phòng, giảng viên và trạng thái *Đang diễn ra / Sắp tới / Đã kết thúc*. Chạm → chi tiết môn.
 - Ngày không có lịch: thẻ "Một chút thời gian cho chính mình" + nút nhảy tới ngày gần nhất có lịch.
 - Nút **Hôm nay** (vô hiệu khi đang xem hôm nay). Lịch chỉ hiển thị trong khoảng thời gian học kỳ.
-
+ 
 ### 2.8. Tracker (tiến độ)
 
 - Bộ chọn học kỳ → **Semester overview** (tín chỉ đạt được, số bài đã xong).
@@ -116,7 +119,8 @@ Phần đầu: ảnh môn, mã môn, giảng viên, vòng tiến độ %, số b
 
 - Thẻ sinh viên (họ tên, khoá, ngành), thông tin: mã SV, năm học, học kỳ.
 - Lối tắt "My academic progress" → Tracker.
-- Trạng thái kết nối: *Đã đồng bộ* (kèm địa chỉ server) / *Đang ngoại tuyến* / *Chế độ xem thử*.
+- Công tắc **Nhắc hạn nộp** (xem 2.11).
+- Trạng thái kết nối: *Đã đồng bộ* (kèm địa chỉ server và giờ đồng bộ) / *Đang ngoại tuyến* (kèm giờ của bản lưu) / *Chế độ xem thử*.
 - Đăng xuất (có xác nhận).
 
 ### 2.10. Thông báo (dialog từ chuông)
@@ -124,6 +128,17 @@ Phần đầu: ảnh môn, mã môn, giảng viên, vòng tiến độ %, số b
 - *Deadline reminders*: các bài sắp hạn/quá hạn.
 - *Course progress*: % hoàn thành từng môn; chạm → chi tiết môn.
 - *From your classroom*: thông báo từ server (điểm mới, tin nhắn giảng viên), chấm đỏ = chưa đọc; chạm → đánh dấu đã đọc và mở bài tập / thông tin môn liên quan.
+
+### 2.11. Nhắc hạn nộp (thông báo hệ thống)
+
+| Mục | Mô tả |
+|---|---|
+| Bật/tắt | Công tắc ở Profile, **mặc định tắt**. Android 13+ xin quyền `POST_NOTIFICATIONS` khi bật; từ chối → công tắc giữ nguyên tắt và có snackbar hướng dẫn. Thông báo bị tắt trong Cài đặt → dòng cảnh báo đỏ dưới công tắc. |
+| Lịch nhắc | Mỗi bài chưa xong được nhắc **24 giờ** và **2 giờ** trước hạn; mốc đã trôi qua thì bỏ. Tối đa 24 lời nhắc gần nhất. |
+| Cập nhật | Đặt lại mỗi khi dữ liệu đổi (tải/làm mới, *Mark as done*, *Undo*). Đánh dấu xong → lời nhắc của bài đó bị huỷ. Đăng xuất hoặc phiên hết hạn → huỷ toàn bộ. |
+| Nội dung | "Còn 1 giờ 59 phút: Final project proposal" · "Web Application Development · Hạn nộp 27 Oct, 05:13". Thời gian còn lại được tính **lúc thông báo hiện** (Android có thể giao muộn tới ~1 giờ); đã quá hạn thì không hiện. |
+| Chạm thông báo | Mở app và hiện thẳng *Assignment details* của bài đó. |
+| Khởi động lại máy / cập nhật app | Hệ thống xoá báo thức; app tự đặt lại từ kế hoạch đã lưu mà không cần mở app. |
 
 ---
 
@@ -336,7 +351,7 @@ Deadline được seed **tương đối** so với thời điểm seed (bài g�
 | GET | `/api/v1/reports/grades.csv` | courses, assignments, submissions |
 | POST | `/api/v1/dev/reset` | xoá & seed lại (chỉ khi không ở production) |
 
-Lỗi trả về dạng `{ "error": { "code", "message" } }` với mã HTTP 400/401/404/405/409/413/500.
+Lỗi trả về dạng `{ "error": { "code", "message" } }` với mã HTTP 400/401/404/405/409/413/429/500. Chi tiết từng endpoint: `docs/BACKEND_API.md`.
 
 ---
 
@@ -352,6 +367,7 @@ app/src/main/java/com/example/moodle_usth_mobile_app/
 │   ├── local/SessionStore.kt       # token, server URL, cache bootstrap
 │   ├── local/DownloadSaver.kt      # lưu CSV vào thư mục Download
 │   └── repository/                 # MoodleRepository (online/offline/demo), LearningRules
+├── reminders/                      # ReminderHelper (lập lịch + AlarmManager), ReminderReceiver (hiện thông báo)
 └── ui/
     ├── MainViewModel.kt            # state toàn app, đồng hồ 30s, thao tác ghi
     ├── screens/                    # Login, Home, Courses, CourseDetail, Timetable, Tracker, Profile
@@ -368,5 +384,5 @@ backend/
 
 | Lệnh | Phạm vi |
 |---|---|
-| `cd backend && npm test` | 16 test API: đăng nhập, phân quyền theo đăng ký môn, bộ lọc, đánh dấu/bỏ đánh dấu, trạng thái theo thời gian, thông báo, bootstrap, CSV |
-| `./gradlew :app:testDebugUnitTest` | `LearningRulesTest`: trạng thái bài, chuỗi thời gian còn lại, tiến độ môn, thống kê |
+| `cd backend && npm test` | 21 test API: đăng nhập, phân quyền theo đăng ký môn, bộ lọc, đánh dấu/bỏ đánh dấu, trạng thái theo thời gian, thông báo, bootstrap, CSV, URL lỗi, dọn phiên hết hạn, chặn đăng nhập sai |
+| `./gradlew :app:testDebugUnitTest` | `LearningRulesTest` (trạng thái bài, thời gian còn lại, tiến độ, thống kê) và `DeadlineRemindersTest` (lịch nhắc, câu chữ thông báo, tìm kiếm) |

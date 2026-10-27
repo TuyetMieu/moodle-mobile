@@ -27,8 +27,14 @@ if (ageDays > 1) {
 const app = createApp(db, { allowReset: ALLOW_RESET, log: (line) => console.log(line) })
 
 createServer(app).listen(PORT, HOST, () => {
-  const lanAddresses = Object.values(networkInterfaces()).flat()
-    .filter((a) => a && a.family === "IPv4" && !a.internal).map((a) => a.address)
+  // Tìm địa chỉ IPv4 trong mạng LAN của máy (để điện thoại thật kết nối được).
+  const lanAddresses = []
+  const interfaces = networkInterfaces()
+  for (const name in interfaces) {
+    for (const address of interfaces[name]) {
+      if (address.family === "IPv4" && !address.internal) lanAddresses.push(address.address)
+    }
+  }
   console.log(`Moodle USTH API đang chạy:`)
   console.log(`  • Máy này:          http://localhost:${PORT}`)
   console.log(`  • Android emulator: http://10.0.2.2:${PORT}`)

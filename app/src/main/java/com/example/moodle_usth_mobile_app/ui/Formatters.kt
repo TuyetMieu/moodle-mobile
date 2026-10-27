@@ -11,8 +11,15 @@ object Formatters {
     private val dueFormat = SimpleDateFormat("d MMM, HH:mm", Locale.ENGLISH)
     private val dayTimeFormat = SimpleDateFormat("MMM d, HH:mm", Locale.ENGLISH)
     private val timeFormat = SimpleDateFormat("HH:mm", Locale.ENGLISH)
+    private val shortDateFormat = SimpleDateFormat("dd/MM", Locale.ENGLISH)
 
     fun dueDate(epochMs: Long): String = dueFormat.format(Date(epochMs))
+
+    /** "14:05 hôm nay" / "14:05, 24/10" — dùng cho thời điểm đồng bộ. */
+    fun syncedAt(epochMs: Long, nowMs: Long): String {
+        val time = timeFormat.format(Date(epochMs))
+        return if (dayIndex(nowMs) == dayIndex(epochMs)) "$time hôm nay" else "$time, ${shortDateFormat.format(Date(epochMs))}"
+    }
 
     /** "Today, 08:30" / "Yesterday, 14:15" / "May 16, 14:15". */
     fun postedAt(epochMs: Long, nowMs: Long): String {
@@ -38,7 +45,8 @@ object Formatters {
     }
 
     private fun dayIndex(epochMs: Long): Long {
-        val calendar = Calendar.getInstance().apply { timeInMillis = epochMs }
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = epochMs
         return (epochMs + calendar.get(Calendar.ZONE_OFFSET) + calendar.get(Calendar.DST_OFFSET)) / 86_400_000L
     }
 }

@@ -56,7 +56,7 @@ data class Course(
     val resources: List<CourseResource> = emptyList()
 ) {
     val progress: Int get() = if (total == 0) 0 else Math.round(done * 100f / total)
-    val gradeText: String get() = grade?.let { formatGrade(it) } ?: "—"
+    val gradeText: String get() = if (grade != null) formatGrade(grade) else "—"
 }
 
 enum class GradeStatus { GRADED, IN_PROGRESS, NOT_GRADED }

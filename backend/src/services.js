@@ -9,10 +9,11 @@ export const CATEGORIES = {
 }
 
 export class HttpError extends Error {
-  constructor(status, code, message) {
+  constructor(status, code, message, headers = {}) {
     super(message)
     this.status = status
     this.code = code
+    this.headers = headers
   }
 }
 
@@ -120,26 +121,57 @@ export function unmarkCompleted(db, userId, id, now) {
 
 // ---------------------------------------------------------------- courses
 
-/** Điểm tích luỹ = trung bình có trọng số (theo % đóng góp) của các bài đã chấm. */
-function gradeOf(assignments) {
-  const graded = assignments.filter((a) => a.score != null)
-  const weight = graded.reduce((sum, a) => sum + a.contribution, 0)
-  if (weight === 0) return null
-  return round1(graded.reduce((sum, a) => sum + a.score * a.contribution, 0) / weight)
+/**
+ * Điểm trung bình có trọng số của các bài ĐÃ CHẤM: Σ(điểm × % đóng góp) / Σ(% đóng góp).
+ * Chưa có bài nào được chấm → null.
+ */
+function weightedAverage(assignments) {
+  let totalWeight = 0
+  let totalPoints = 0
+  for (const a of assignments) {
+    if (a.score == null) continue // chưa chấm thì bỏ qua
+    totalWeight += a.contribution
+    totalPoints += a.score * a.contribution
+  }
+  if (totalWeight === 0) return null
+  return round1(totalPoints / totalWeight)
 }
 
+/** Điểm tích luỹ của môn. */
+function gradeOf(assignments) {
+  return weightedAverage(assignments)
+}
+
+/** Điểm và trạng thái chấm của từng thành phần: Attendance, Mid-term & labs, Final project. */
 function gradeComponents(assignments) {
-  return Object.entries(CATEGORIES).map(([key, category]) => {
-    const items = assignments.filter((a) => a.category === key)
-    const graded = items.filter((a) => a.score != null)
-    const gradedWeight = graded.reduce((sum, a) => sum + a.contribution, 0)
-    const publishedWeight = items.reduce((sum, a) => sum + a.contribution, 0)
-    const score = gradedWeight > 0 ? round1(graded.reduce((sum, a) => sum + a.score * a.contribution, 0) / gradedWeight) : null
-    const status = gradedWeight === 0
-      ? "NOT_GRADED"
-      : gradedWeight >= category.weight ? "GRADED" : "IN_PROGRESS"
-    return { key, label: category.label, weight: category.weight, score, status, gradedWeight, publishedWeight }
-  })
+  const result = []
+  for (const key of Object.keys(CATEGORIES)) {
+    const category = CATEGORIES[key]
+    let gradedWeight = 0 // tổng % của các bài đã chấm
+    let publishedWeight = 0 // tổng % của mọi bài thuộc thành phần này
+    const items = []
+    for (const a of assignments) {
+      if (a.category !== key) continue
+      items.push(a)
+      publishedWeight += a.contribution
+      if (a.score != null) gradedWeight += a.contribution
+    }
+
+    let status = "IN_PROGRESS"
+    if (gradedWeight === 0) status = "NOT_GRADED"
+    else if (gradedWeight >= category.weight) status = "GRADED"
+
+    result.push({
+      key: key,
+      label: category.label,
+      weight: category.weight,
+      score: weightedAverage(items),
+      status: status,
+      gradedWeight: gradedWeight,
+      publishedWeight: publishedWeight,
+    })
+  }
+  return result
 }
 
 function toCourse(row, assignments) {
@@ -283,9 +315,19 @@ export function learningSummary(db, userId, now) {
 export function semesterOverview(db, user, now) {
   const semester = currentSemester(db)
   const courses = listCourses(db, user.id, now)
-  const graded = courses.filter((c) => c.grade != null)
-  const gradedCredits = graded.reduce((sum, c) => sum + c.credits, 0)
   const summary = learningSummary(db, user.id, now)
+
+  // Điểm TB học kỳ = TB điểm các môn, có trọng số theo tín chỉ (bỏ môn chưa có điểm).
+  let enrolledCredits = 0
+  let gradedCredits = 0
+  let gradePoints = 0
+  for (const c of courses) {
+    enrolledCredits += c.credits
+    if (c.grade != null) {
+      gradedCredits += c.credits
+      gradePoints += c.grade * c.credits
+    }
+  }
   return {
     label: semester.label,
     academicYear: semester.academicYear,
@@ -293,44 +335,61 @@ export function semesterOverview(db, user, now) {
     endsAt: semester.endsAt,
     creditsEarned: user.credits_earned,
     creditsMilestone: user.credits_milestone,
-    enrolledCredits: courses.reduce((sum, c) => sum + c.credits, 0),
+    enrolledCredits: enrolledCredits,
     coursesCount: courses.length,
-    averageGrade: gradedCredits === 0 ? null : round1(graded.reduce((sum, c) => sum + c.grade * c.credits, 0) / gradedCredits),
+    averageGrade: gradedCredits === 0 ? null : round1(gradePoints / gradedCredits),
     completion: { done: summary.done, total: summary.total, progress: summary.progress },
   }
 }
 
+/** Một ô CSV: nếu có dấu phẩy, dấu " hoặc xuống dòng thì bọc trong "..." và nhân đôi dấu ". */
+function csvCell(value) {
+  const text = value == null ? "" : String(value)
+  if (text.includes(",") || text.includes('"') || text.includes("\n")) {
+    return '"' + text.replaceAll('"', '""') + '"'
+  }
+  return text
+}
+
 export function gradeReportCsv(db, user, now) {
   const semester = currentSemester(db)
-  const escape = (value) => {
-    const text = value == null ? "" : String(value)
-    return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
+  const rows = []
+  rows.push(["Student", "Student ID", "Semester", "Subject", "Course code", "Credits", "Completed tasks", "Total tasks", "Accumulated grade"])
+  for (const c of listCourses(db, user.id, now)) {
+    const grade = c.grade == null ? "" : c.grade
+    rows.push([user.full_name, user.student_id, semester.label + " " + semester.academicYear,
+      c.title, c.code, c.credits, c.done, c.total, grade])
   }
-  const rows = [
-    ["Student", "Student ID", "Semester", "Subject", "Course code", "Credits", "Completed tasks", "Total tasks", "Accumulated grade"],
-    ...listCourses(db, user.id, now).map((c) => [
-      user.full_name, user.student_id, `${semester.label} ${semester.academicYear}`,
-      c.title, c.code, c.credits, c.done, c.total, c.grade ?? "",
-    ]),
-  ]
-  // BOM để Excel đọc đúng UTF-8.
-  return "﻿" + rows.map((row) => row.map(escape).join(",")).join("\r\n") + "\r\n"
+
+  // Mỗi dòng: các ô nối bằng dấu phẩy. Dòng cách nhau bằng \r\n (chuẩn CSV, Excel đọc được).
+  let csv = "\ufeff" // ký tự BOM ở đầu file để Excel đọc đúng tiếng Việt (UTF-8)
+  for (const row of rows) {
+    const cells = []
+    for (const value of row) cells.push(csvCell(value))
+    csv += cells.join(",") + "\r\n"
+  }
+  return csv
 }
 
 /** Một lần gọi trả về đủ dữ liệu cho app khi mở / kéo để làm mới. */
 export function bootstrap(db, user, now) {
+  // Lấy bài tập một lần rồi chia theo môn, thay vì truy vấn lại cho từng môn.
+  const assignments = listAssignments(db, user.id, now)
   return {
     serverTime: now,
     profile: profileOf(db, user),
     semester: semesterOverview(db, user, now),
     summary: learningSummary(db, user.id, now),
-    courses: listCourses(db, user.id, now).map((course) => ({
-      ...course,
-      gradeComponents: getCourse(db, user.id, course.id, now).gradeComponents,
-      announcements: listAnnouncements(db, course.id),
-      resources: listResources(db, course.id),
-    })),
-    assignments: listAssignments(db, user.id, now),
+    courses: enrolledCourseRows(db, user.id).map((row) => {
+      const own = assignments.filter((a) => a.courseId === row.id)
+      return {
+        ...toCourse(row, own),
+        gradeComponents: gradeComponents(own),
+        announcements: listAnnouncements(db, row.id),
+        resources: listResources(db, row.id),
+      }
+    }),
+    assignments,
     timetable: timetable(db, user.id),
     notifications: listNotifications(db, user.id),
   }

@@ -12,9 +12,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -24,20 +31,41 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moodle_usth_mobile_app.data.model.Assignment
 import com.example.moodle_usth_mobile_app.data.model.AssignmentStatus
 import com.example.moodle_usth_mobile_app.data.repository.LearningRules
-import com.example.moodle_usth_mobile_app.ui.DialogState
 import com.example.moodle_usth_mobile_app.ui.MainViewModel
 import com.example.moodle_usth_mobile_app.ui.components.AssignmentRow
+import com.example.moodle_usth_mobile_app.ui.theme.CardBorderLight
 import com.example.moodle_usth_mobile_app.ui.theme.PrimaryIndigo
 import com.example.moodle_usth_mobile_app.ui.theme.TextPrimary
 import com.example.moodle_usth_mobile_app.ui.theme.TextSecondary
 
 private val FILTERS = listOf("todo" to "To do", "urgent" to "Due soon", "done" to "Done")
 private const val RECENT_WINDOW_MS = 14 * 24 * 3_600_000L
+
+/**
+ * Khớp từ khoá với tên bài hoặc tên môn (không phân biệt hoa/thường). Cố ý không khớp tên thành phần điểm:
+ * "Mid-term & labs" khiến từ khoá "lab" trả về cả quiz và bài đọc.
+ */
+fun matchesSearch(assignment: Assignment, query: String): Boolean {
+    val text = query.trim()
+    if (text.isEmpty()) return true
+    if (assignment.title.contains(text, ignoreCase = true)) return true
+    if (assignment.courseTitle.contains(text, ignoreCase = true)) return true
+    if (assignment.courseShortTitle.contains(text, ignoreCase = true)) return true
+    return false
+}
+
+/** Bài có thuộc tab [filter] không: "todo" = chưa xong, "urgent" = sắp hạn/quá hạn, "done" = đã xong. */
+private fun matchesFilter(status: AssignmentStatus, filter: String): Boolean {
+    if (filter == "done") return status == AssignmentStatus.DONE
+    if (filter == "urgent") return LearningRules.isUrgent(status)
+    return status != AssignmentStatus.DONE
+}
 
 @Composable
 fun ClassworkListDialog(
@@ -47,26 +75,52 @@ fun ClassworkListDialog(
 ) {
     var activeFilter by rememberSaveable(initialFilter) { mutableStateOf(initialFilter) }
     var selectedCourseId by rememberSaveable { mutableStateOf("all") }
+    var query by rememberSaveable { mutableStateOf("") }
 
-    val assignments by viewModel.assignments.collectAsState()
-    val courses by viewModel.courses.collectAsState()
+    val assignments = viewModel.assignments
+    val courses = viewModel.courses
 
-    val scoped = assignments.filter { selectedCourseId == "all" || it.courseId == selectedCourseId }
-    fun matches(assignment: Assignment, filter: String): Boolean {
-        val status = viewModel.getAssignmentStatus(assignment)
-        return when (filter) {
-            "done" -> status == AssignmentStatus.DONE
-            "urgent" -> LearningRules.isUrgent(status)
-            else -> status != AssignmentStatus.DONE
-        }
+    // Bước 1: lọc theo môn và từ khoá.
+    val scoped = assignments.filter { assignment ->
+        val rightCourse = selectedCourseId == "all" || assignment.courseId == selectedCourseId
+        rightCourse && matchesSearch(assignment, query)
     }
-    val visible = scoped.filter { matches(it, activeFilter) }.let { list ->
-        // "Done" hiện bài mới hoàn thành trước; các tab còn lại theo hạn nộp gần nhất.
-        if (activeFilter == "done") list.sortedByDescending { it.completedAtEpochMs } else list.sortedBy { it.dueAtEpochMs }
+    fun matches(assignment: Assignment, filter: String): Boolean =
+        matchesFilter(viewModel.getAssignmentStatus(assignment), filter)
+
+    // Bước 2: lọc theo tab. Tab "Done" xếp bài mới xong lên đầu, các tab khác xếp theo hạn nộp.
+    val filtered = scoped.filter { matches(it, activeFilter) }
+    val visible = if (activeFilter == "done") {
+        filtered.sortedByDescending { it.completedAtEpochMs }
+    } else {
+        filtered.sortedBy { it.dueAtEpochMs }
     }
 
     AppModal(title = "My classwork", onDismiss = onDismiss) {
         ModalSubtitle("Every class. Every deadline. One clear list.")
+
+        // Search
+        OutlinedTextField(
+            value = query,
+            onValueChange = { query = it },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("Search assignments or classes", fontSize = 13.sp) },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = TextSecondary) },
+            trailingIcon = {
+                if (query.isNotEmpty()) {
+                    IconButton(onClick = { query = "" }) {
+                        Icon(Icons.Default.Close, contentDescription = "Xoá tìm kiếm", tint = TextSecondary)
+                    }
+                }
+            },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = PrimaryIndigo,
+                unfocusedBorderColor = CardBorderLight
+            )
+        )
 
         // Status filter tabs
         Row(
@@ -122,21 +176,20 @@ fun ClassworkListDialog(
                     "done" -> "Your next small win starts here."
                     else -> "All caught up!"
                 },
-                subtitle = "Try another class or status to see more assignments."
+                subtitle = if (query.isBlank()) "Try another class or status to see more assignments."
+                else "No assignments match “${query.trim()}”. Try another keyword, class or status."
             )
         } else if (activeFilter == "done") {
             // Khớp với ô "Recent done" ở Home: tách bài xong trong 14 ngày gần đây và bài cũ hơn.
-            val (recent, earlier) = visible.partition { viewModel.nowMs - (it.completedAtEpochMs ?: 0L) <= RECENT_WINDOW_MS }
-            listOf("Gần đây · 14 ngày" to recent, "Trước đó" to earlier).forEach { (heading, items) ->
-                if (items.isEmpty()) return@forEach
-                Text(
-                    text = "${heading.uppercase()} (${items.size})",
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextSecondary,
-                    letterSpacing = 0.5.sp
-                )
-                items.forEach { assignment -> ClassworkRow(assignment, viewModel) }
+            val recent = visible.filter { viewModel.nowMs - (it.completedAtEpochMs ?: 0L) <= RECENT_WINDOW_MS }
+            val earlier = visible.filter { viewModel.nowMs - (it.completedAtEpochMs ?: 0L) > RECENT_WINDOW_MS }
+            if (recent.isNotEmpty()) {
+                GroupTitle("GẦN ĐÂY · 14 NGÀY (${recent.size})")
+                recent.forEach { assignment -> ClassworkRow(assignment, viewModel) }
+            }
+            if (earlier.isNotEmpty()) {
+                GroupTitle("TRƯỚC ĐÓ (${earlier.size})")
+                earlier.forEach { assignment -> ClassworkRow(assignment, viewModel) }
             }
         } else {
             visible.forEach { assignment -> ClassworkRow(assignment, viewModel) }
@@ -151,6 +204,11 @@ fun ClassworkListDialog(
 }
 
 @Composable
+private fun GroupTitle(text: String) {
+    Text(text = text, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TextSecondary, letterSpacing = 0.5.sp)
+}
+
+@Composable
 private fun ClassworkRow(assignment: Assignment, viewModel: MainViewModel) {
     val status = viewModel.getAssignmentStatus(assignment)
     AssignmentRow(
@@ -159,7 +217,7 @@ private fun ClassworkRow(assignment: Assignment, viewModel: MainViewModel) {
         timeRemainingText = viewModel.formatTimeRemaining(assignment),
         showCourse = true,
         compact = status == AssignmentStatus.DONE,
-        onClick = { viewModel.openDialog(DialogState.AssignmentDetail(assignment.id)) }
+        onClick = { viewModel.openDialog("assignment", assignment.id) }
     )
 }
 

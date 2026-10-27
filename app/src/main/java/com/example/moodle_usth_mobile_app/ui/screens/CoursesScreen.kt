@@ -26,7 +26,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,7 +34,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moodle_usth_mobile_app.data.model.Course
-import com.example.moodle_usth_mobile_app.ui.DialogState
 import com.example.moodle_usth_mobile_app.ui.MainViewModel
 import com.example.moodle_usth_mobile_app.ui.components.BadgeItem
 import com.example.moodle_usth_mobile_app.ui.components.CourseCard
@@ -52,7 +50,7 @@ fun CoursesScreen(
     modifier: Modifier = Modifier
 ) {
     val summary = viewModel.getStudySummary()
-    val semester by viewModel.semester.collectAsState()
+    val semester = viewModel.semester
 
     Column(
         modifier = modifier
@@ -69,7 +67,7 @@ fun CoursesScreen(
         ) {
             Column {
                 Text(
-                    text = semester?.let { "${it.label} · ${it.academicYear}".uppercase() }.orEmpty(),
+                    text = if (semester != null) "${semester.label} · ${semester.academicYear}".uppercase() else "",
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextSecondary,
@@ -84,7 +82,7 @@ fun CoursesScreen(
             }
 
             IconButton(
-                onClick = { viewModel.openDialog(DialogState.CalendarPlanner) },
+                onClick = { viewModel.openDialog("planner") },
                 modifier = Modifier
                     .size(42.dp)
                     .background(Color.White, CircleShape)
@@ -114,7 +112,7 @@ fun CoursesScreen(
                     modifier = Modifier
                         .weight(1f)
                         .background(Color.White, RoundedCornerShape(14.dp))
-                        .clickable { viewModel.openDialog(DialogState.ClassworkList("todo")) }
+                        .clickable { viewModel.openDialog("classwork", "todo") }
                         .padding(12.dp)
                 ) {
                     Row(
@@ -145,7 +143,7 @@ fun CoursesScreen(
                     modifier = Modifier
                         .weight(1f)
                         .background(Color.White, RoundedCornerShape(14.dp))
-                        .clickable { viewModel.openDialog(DialogState.ClassworkList("urgent")) }
+                        .clickable { viewModel.openDialog("classwork", "urgent") }
                         .padding(12.dp)
                 ) {
                     Row(
@@ -201,7 +199,7 @@ fun CoursesScreen(
                     }
                 }
 
-                BadgeItem(text = "${courses.sumOf { it.credits }} credits", tone = "blue")
+                BadgeItem(text = "${totalCredits(courses)} credits", tone = "blue")
             }
 
             // Courses List
@@ -239,4 +237,11 @@ fun CoursesScreen(
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
+}
+
+/** Tổng số tín chỉ của các môn. */
+private fun totalCredits(courses: List<Course>): Int {
+    var total = 0
+    for (course in courses) total += course.credits
+    return total
 }

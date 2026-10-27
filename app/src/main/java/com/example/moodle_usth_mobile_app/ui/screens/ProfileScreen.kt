@@ -1,5 +1,9 @@
 package com.example.moodle_usth_mobile_app.ui.screens
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,16 +28,18 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +53,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moodle_usth_mobile_app.ui.AppDestination
+import com.example.moodle_usth_mobile_app.ui.Formatters
 import com.example.moodle_usth_mobile_app.ui.MainViewModel
 import com.example.moodle_usth_mobile_app.ui.components.BadgeItem
 import com.example.moodle_usth_mobile_app.ui.theme.AccentCoral
@@ -65,7 +72,7 @@ fun ProfileScreen(
     viewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
-    val profile by viewModel.profile.collectAsState()
+    val profile = viewModel.profile
     var confirmLogout by remember { mutableStateOf(false) }
 
     if (confirmLogout) {
@@ -88,7 +95,17 @@ fun ProfileScreen(
             containerColor = Color.White
         )
     }
-    val loadState by viewModel.loadState.collectAsState()
+    val remindersEnabled = viewModel.remindersEnabled
+    val syncedAtMs = viewModel.lastSyncedAtMs
+    val syncedAt = if (syncedAtMs != null) Formatters.syncedAt(syncedAtMs, viewModel.nowMs) else null
+
+    // Android 13+ phải xin POST_NOTIFICATIONS lúc chạy; máy cũ hơn có sẵn quyền.
+    val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) viewModel.setRemindersOn(true)
+        else viewModel.message = "Chưa được cấp quyền thông báo · có thể bật lại trong Cài đặt › Ứng dụng › Thông báo."
+    }
+    // Đã bật nhắc nhưng thông báo của app đang bị tắt trong Cài đặt → hiện cảnh báo.
+    val notificationsBlocked = remindersEnabled && !viewModel.canPostNotifications()
 
     Column(
         modifier = modifier
@@ -166,20 +183,79 @@ fun ProfileScreen(
                 onClick = { viewModel.navigateTo(AppDestination.TRACKER) }
             )
 
+            // Deadline reminders
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(PrimaryIndigoLight, RoundedCornerShape(10.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.NotificationsActive, contentDescription = null, tint = PrimaryIndigo, modifier = Modifier.size(20.dp))
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(text = "Nhắc hạn nộp", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Thông báo 24 giờ và 2 giờ trước hạn của bài chưa hoàn thành.",
+                                fontSize = 12.sp,
+                                color = TextSecondary,
+                                lineHeight = 17.sp
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Switch(
+                            checked = remindersEnabled,
+                            onCheckedChange = { checked ->
+                                if (!checked) {
+                                    viewModel.setRemindersOn(false)
+                                } else if (Build.VERSION.SDK_INT >= 33 && !viewModel.canPostNotifications()) {
+                                    // Android 13+ phải xin quyền thông báo trước.
+                                    notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                } else {
+                                    viewModel.setRemindersOn(true)
+                                }
+                            },
+                            colors = SwitchDefaults.colors(checkedTrackColor = PrimaryIndigo)
+                        )
+                    }
+                    if (notificationsBlocked) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = "Thông báo của app đang bị tắt trong Cài đặt hệ thống nên lời nhắc sẽ không hiện.",
+                            fontSize = 12.sp,
+                            color = AccentCoral,
+                            lineHeight = 17.sp
+                        )
+                    }
+                }
+            }
+
             // Connection status
-            val (icon, tint, title, body) = when {
-                viewModel.isDemoMode -> ConnectionInfo(
-                    Icons.Default.Info, AccentAmber, "Chế độ xem thử",
-                    "Đang dùng dữ liệu mẫu đóng gói trong app. Đăng xuất để kết nối tới backend."
-                )
-                loadState.isOffline -> ConnectionInfo(
-                    Icons.Default.CloudOff, AccentCoral, "Đang ngoại tuyến",
-                    "Không kết nối được ${viewModel.serverUrl}. Dữ liệu hiển thị là bản đồng bộ gần nhất."
-                )
-                else -> ConnectionInfo(
-                    Icons.Default.CloudDone, AccentGreen, "Đã đồng bộ",
-                    "Dữ liệu lấy từ ${viewModel.serverUrl}. Kéo xuống ở các màn hình để làm mới."
-                )
+            var icon = Icons.Default.CloudDone
+            var tint = AccentGreen
+            var title = "Đã đồng bộ"
+            var body = "Dữ liệu lấy từ ${viewModel.serverUrl}" + (if (syncedAt != null) " lúc $syncedAt" else "") +
+                ". App tự làm mới khi bạn quay lại sau 5 phút; kéo xuống để làm mới ngay."
+            if (viewModel.isDemoMode) {
+                icon = Icons.Default.Info
+                tint = AccentAmber
+                title = "Chế độ xem thử"
+                body = "Đang dùng dữ liệu mẫu đóng gói trong app. Đăng xuất để kết nối tới backend."
+            } else if (viewModel.isOffline) {
+                icon = Icons.Default.CloudOff
+                tint = AccentCoral
+                title = "Đang ngoại tuyến"
+                body = "Không kết nối được ${viewModel.serverUrl}. Dữ liệu hiển thị là bản đồng bộ " +
+                    (if (syncedAt != null) "lúc $syncedAt." else "gần nhất.")
             }
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -217,8 +293,6 @@ fun ProfileScreen(
         }
     }
 }
-
-private data class ConnectionInfo(val icon: ImageVector, val tint: Color, val title: String, val body: String)
 
 @Composable
 private fun InfoRow(label: String, value: String) {
