@@ -5,6 +5,9 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationManagerCompat
+import com.example.moodle_usth_mobile_app.R
+import com.example.moodle_usth_mobile_app.data.local.AppSettings
+import com.example.moodle_usth_mobile_app.data.local.ReminderLead
 import com.example.moodle_usth_mobile_app.data.model.Assignment
 import com.example.moodle_usth_mobile_app.ui.Formatters
 import org.json.JSONArray
@@ -23,7 +26,7 @@ data class DeadlineReminder(
 /**
  * Nhắc hạn nộp bằng thông báo hệ thống.
  *
- * Cách làm: với mỗi bài chưa xong, đặt một "báo thức" (AlarmManager) lúc còn 24 giờ và lúc còn 2 giờ.
+ * Cách làm: với mỗi bài chưa xong, đặt một "báo thức" (AlarmManager) ở từng mốc người dùng chọn (mặc định còn 24 giờ và 2 giờ).
  * Tới giờ, Android gọi [ReminderReceiver] để hiện thông báo.
  * Danh sách báo thức đã đặt được lưu lại để lần sau huỷ được, và để đặt lại sau khi khởi động lại máy.
  */
@@ -31,10 +34,13 @@ object ReminderHelper {
 
     private const val HOUR = 3_600_000L
     private const val PREFS = "moodle_reminders"
-    private const val MAX_REMINDERS = 24
+    private const val MAX_REMINDERS = 48
 
-    /** Nhắc trước hạn 24 giờ và 2 giờ. */
-    val LEAD_TIMES = listOf(24 * HOUR, 2 * HOUR)
+    /** Mốc nhắc mặc định: trước hạn 24 giờ và 2 giờ. Người dùng đổi trong Hồ sơ › Nhắc hạn nộp. */
+    val DEFAULT_LEAD_TIMES: List<Long> = ReminderLead.DEFAULT.map { it.millis }.sortedDescending()
+
+    /** Mốc nhắc người dùng đã chọn (ms trước hạn nộp), mốc xa nhất đứng đầu. */
+    fun leadTimes(context: Context): List<Long> = AppSettings(context).reminderLeads.map { it.millis }.sortedDescending()
 
     // ---------------------------------------------------------- bật / tắt
 
@@ -52,12 +58,12 @@ object ReminderHelper {
     // ---------------------------------------------------------- tính lịch nhắc (không dùng Android, test được)
 
     /** Lịch nhắc cho các bài chưa xong và chưa quá hạn. Mốc nhắc đã qua thì bỏ. */
-    fun makePlan(assignments: List<Assignment>, nowMs: Long): List<DeadlineReminder> {
+    fun makePlan(assignments: List<Assignment>, nowMs: Long, leadTimes: List<Long> = DEFAULT_LEAD_TIMES): List<DeadlineReminder> {
         val plan = mutableListOf<DeadlineReminder>()
         for (assignment in assignments) {
             if (assignment.isCompleted) continue
             if (assignment.dueAtEpochMs <= nowMs) continue
-            for (lead in LEAD_TIMES) {
+            for (lead in leadTimes) {
                 val triggerAt = assignment.dueAtEpochMs - lead
                 if (triggerAt > nowMs) {
                     plan.add(
@@ -73,27 +79,8 @@ object ReminderHelper {
                 }
             }
         }
-        // Lần nhắc sớm nhất đứng đầu, chỉ giữ tối đa 24 lần.
+        // Lần nhắc sớm nhất đứng đầu, chỉ giữ tối đa 48 lần.
         return plan.sortedBy { it.triggerAtEpochMs }.take(MAX_REMINDERS)
-    }
-
-    /**
-     * "Còn 1 giờ 20 phút", tính lúc thông báo hiện ra (Android có thể giao báo thức muộn tới ~1 giờ,
-     * nên không ghi cứng "Còn 2 giờ"). Trả về null nếu đã quá hạn.
-     */
-    fun remainingText(dueAtEpochMs: Long, nowMs: Long): String? {
-        val remaining = dueAtEpochMs - nowMs
-        if (remaining <= 0) return null
-        val minutes = (remaining + 59_999) / 60_000 // làm tròn lên
-        val hours = minutes / 60
-        val minutesLeft = minutes % 60
-        if (minutes < 60) return "Còn $minutes phút"
-        if (minutes < 24 * 60) {
-            if (minutesLeft == 0L) return "Còn $hours giờ"
-            return "Còn $hours giờ $minutesLeft phút"
-        }
-        val days = (remaining + 24 * HOUR - 1) / (24 * HOUR)
-        return "Còn $days ngày"
     }
 
     /** Mỗi lần nhắc có một mã riêng, giống nhau giữa các lần đặt lại để không bị nhân đôi. */
@@ -103,7 +90,7 @@ object ReminderHelper {
 
     /** Huỷ lịch cũ rồi đặt lịch mới theo danh sách bài. Trả về số lời nhắc đã đặt. */
     fun update(context: Context, assignments: List<Assignment>): Int {
-        val plan = if (isEnabled(context)) makePlan(assignments, System.currentTimeMillis()) else emptyList()
+        val plan = if (isEnabled(context)) makePlan(assignments, System.currentTimeMillis(), leadTimes(context)) else emptyList()
         schedule(context, plan)
         return plan.size
     }
@@ -203,7 +190,7 @@ object ReminderHelper {
         return result
     }
 
-    /** Nội dung dòng thứ hai của thông báo. */
-    fun notificationBody(courseTitle: String, dueAtEpochMs: Long): String =
-        "$courseTitle · Hạn nộp ${Formatters.dueDate(dueAtEpochMs)}"
+    /** Nội dung dòng thứ hai của thông báo (context đã áp ngôn ngữ của app). */
+    fun notificationBody(context: Context, courseTitle: String, dueAtEpochMs: Long): String =
+        context.getString(R.string.reminder_body, courseTitle, Formatters.dueDate(dueAtEpochMs))
 }

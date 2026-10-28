@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- chung -->
+    <string name="common_cancel">Huỷ</string>
+    <string name="common_save">Lưu</string>
+    <string name="common_delete">Xoá</string>
+    <string name="common_close">Đóng</string>
+    <string name="common_retry">Thử lại</string>
+    <string name="common_logout">Đăng xuất</string>
+    <string name="common_back">Quay lại</string>
+    <string name="common_edit">Sửa</string>
+    <string name="common_add">Thêm</string>
+    <string name="common_ok">OK</string>
+    <string name="common_loading">Đang đồng bộ với Moodle…</string>
+    <string name="common_load_failed">Không tải được dữ liệu</string>
+    <string name="common_score_out_of">%1$s / %2$s</string>
+    <string name="common_bonus">Bonus</string>
+    <string name="common_bonus_up_to">Bonus · tối đa +%1$s</string>
+    <string name="common_auto_graded">Máy chấm</string>
+    <string name="common_late">Nộp muộn</string>
+
+    <!-- thanh điều hướng -->
+    <string name="nav_home">Trang chủ</string>
+    <string name="nav_courses">Môn học</string>
+    <string name="nav_timetable">Lịch học</string>
+    <string name="nav_tracker">Tiến độ</string>
+    <string name="nav_profile">Hồ sơ</string>
+    <string name="nav_teaching">Lớp dạy</string>
+    <string name="nav_posts">Đăng tin</string>
+
+    <!-- banner trạng thái -->
+    <string name="banner_demo">Chế độ xem thử · dữ liệu mẫu, không kết nối máy chủ</string>
+    <string name="banner_offline_at">Ngoại tuyến · dữ liệu lúc %1$s. Chạm để thử lại.</string>
+    <string name="banner_offline">Ngoại tuyến · đang xem dữ liệu đã lưu. Chạm để thử lại.</string>
+
+    <!-- thời gian -->
+    <string name="time_just_now">Vừa xong</string>
+    <string name="time_yesterday">Hôm qua</string>
+    <string name="time_today_at">Hôm nay, %1$s</string>
+    <string name="time_yesterday_at">Hôm qua, %1$s</string>
+    <string name="time_synced_today">%1$s hôm nay</string>
+    <plurals name="time_minutes_ago">
+        <item quantity="other">%d phút trước</item>
+    </plurals>
+    <plurals name="time_hours_ago">
+        <item quantity="other">%d giờ trước</item>
+    </plurals>
+    <plurals name="time_days_ago">
+        <item quantity="other">%d ngày trước</item>
+    </plurals>
+    <string name="time_left_overdue">Quá hạn</string>
+    <string name="time_left_minutes">Còn %d phút</string>
+    <string name="time_left_hours">Còn %1$d giờ %2$d phút</string>
+    <plurals name="time_left_days">
+        <item quantity="other">Còn %d ngày</item>
+    </plurals>
+
+    <!-- nhắc hạn nộp -->
+    <plurals name="reminder_left_days">
+        <item quantity="other">Còn %d ngày</item>
+    </plurals>
+    <plurals name="reminder_left_hours">
+        <item quantity="other">Còn %d giờ</item>
+    </plurals>
+    <plurals name="reminder_left_minutes">
+        <item quantity="other">Còn %d phút</item>
+    </plurals>
+    <string name="reminder_left_hours_minutes">Còn %1$d giờ %2$d phút</string>
+    <string name="reminder_title">%1$s: %2$s</string>
+    <string name="reminder_body">%1$s · Hạn nộp %2$s</string>
+    <string name="channel_deadlines">Nhắc hạn nộp</string>
+    <string name="channel_deadlines_desc">Nhắc bài tập chưa hoàn thành trước hạn nộp</string>
+    <string name="channel_program">Tin của ngành</string>
+    <string name="channel_program_desc">Sự kiện và thông báo dành cho sinh viên ngành của bạn</string>
+    <string name="channel_general">Thầy cô &amp; toàn trường</string>
+    <string name="channel_general_desc">Điểm mới, bài mới, đổi hạn nộp, tin của lớp và thông báo toàn trường</string>
+
+    <!-- nội dung thông báo -->
+    <string name="notif_grade_title">Có điểm mới · %1$s</string>
+    <string name="notif_grade_body">%1$s · %2$s</string>
+    <string name="notif_grade_body_late">%1$s · %2$s · nộp muộn (−2)</string>
+    <string name="notif_assignment_new_title">Bài tập mới · %1$s</string>
+    <string name="notif_assignment_new_body">%1$s · hạn %2$s</string>
+    <string name="notif_deadline_changed_title">Đổi hạn nộp · %1$s</string>
+    <string name="notif_deadline_changed_body">%1$s: %2$s → %3$s</string>
+    <string name="notif_class_post_title">%1$s · %2$s</string>
+    <string name="notif_event_when">%1$s · %2$s</string>
+    <plurals name="notif_summary">
+        <item quantity="other">%d thông báo mới</item>
+    </plurals>
+
+    <!-- cài đặt -->
+    <string name="settings_title">Cài đặt</string>
+    <string name="settings_language">Ngôn ngữ</string>
+    <string name="settings_theme">Giao diện</string>
+    <string name="lang_system">Theo hệ thống</string>
+    <string name="theme_system">Hệ thống</string>
+    <string name="theme_light">Sáng</string>
+    <string name="theme_dark">Tối</string>
+    <string name="settings_reminders">Nhắc hạn nộp</string>
+    <string name="settings_reminders_desc">Thông báo trước hạn nộp của bài chưa hoàn thành.</string>
+    <string name="settings_reminder_leads">Nhắc trước</string>
+    <string name="settings_reminders_blocked">Thông báo của app đang bị tắt trong Cài đặt hệ thống nên lời nhắc sẽ không hiện.</string>
+    <string name="settings_reminders_denied">Chưa được cấp quyền thông báo · có thể bật lại trong Cài đặt › Ứng dụng › Thông báo.</string>
+    <string name="settings_notify_title">Thông báo</string>
+    <string name="settings_notify_desc">App kiểm tra tin mới khoảng 15 phút một lần, kể cả khi đã đóng.</string>
+    <string name="settings_notify_program">Tin của ngành</string>
+    <string name="settings_notify_general">Thầy cô &amp; toàn trường</string>
+    <string name="lead_THREE_DAYS">3 ngày</string>
+    <string name="lead_ONE_DAY">1 ngày</string>
+    <string name="lead_TWELVE_HOURS">12 giờ</string>
+    <string name="lead_SIX_HOURS">6 giờ</string>
+    <string name="lead_TWO_HOURS">2 giờ</string>
+    <string name="lead_ONE_HOUR">1 giờ</string>
+    <string name="lead_THIRTY_MINUTES">30 phút</string>
+    <string name="reminders_off">Đã tắt nhắc hạn nộp.</string>
+    <string name="reminders_on_none">Đã bật nhắc hạn nộp · hiện không có bài nào cần nhắc.</string>
+    <plurals name="reminders_on_count">
+        <item quantity="other">Đã bật nhắc hạn nộp · %d lời nhắc.</item>
+    </plurals>
+    <string name="reminders_leads_empty">Hãy chọn ít nhất một mốc nhắc.</string>
+
+    <!-- thông báo ngắn (snackbar) -->
+    <string name="msg_course_progress">%1$s: hoàn thành %2$d%% · còn %3$d bài.</string>
+    <string name="msg_unmarked">Đã bỏ đánh dấu “%1$s”.</string>
+    <string name="msg_report_downloaded">Đã tải báo cáo điểm: %1$s</string>
+
+    <!-- lỗi -->
+    <string name="error_timeout">Máy chủ không phản hồi (%1$s). Kiểm tra backend đã chạy và quyền truy cập mạng cục bộ (Cài đặt › Ứng dụng › Quyền).</string>
+    <string name="error_connect">Không kết nối được tới %1$s. Kiểm tra backend đã chạy và app đã được cấp quyền truy cập mạng cục bộ.</string>
+    <string name="error_generic">Không kết nối được tới %1$s. Kiểm tra backend và địa chỉ máy chủ.</string>
+    <string name="error_session_expired">Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.</string>
+    <string name="error_offline_cache">Không kết nối được máy chủ · đang hiển thị dữ liệu đã lưu.</string>
+    <string name="error_missing_credentials">Vui lòng nhập tên đăng nhập và mật khẩu</string>
+    <string name="error_invalid_credentials">Tên đăng nhập hoặc mật khẩu không đúng</string>
+    <string name="error_too_many_attempts">Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau.</string>
+    <string name="error_already_graded">Bài đã được chấm điểm, không thể bỏ đánh dấu hoàn thành.</string>
+    <string name="error_forbidden">Tài khoản của bạn không dùng được chức năng này.</string>
+    <string name="error_weights_sum">Tổng trọng số các thành phần phải bằng 100%.</string>
+    <string name="error_component_in_use">Thành phần này còn bài tập, hãy chuyển hoặc xoá bài trước.</string>
+    <string name="error_bonus_in_use">Môn còn bài bonus, hãy xoá bài bonus trước khi tắt bonus.</string>
+    <string name="error_bonus_disabled">Hãy bật bonus cho môn này trước.</string>
+    <string name="error_assignment_graded">Bài đã có điểm, không thể xoá.</string>
+    <string name="error_due_in_past">Hạn nộp phải ở tương lai.</string>
+    <string name="error_duplicate_component">Có hai thành phần trùng tên.</string>
+</resources>

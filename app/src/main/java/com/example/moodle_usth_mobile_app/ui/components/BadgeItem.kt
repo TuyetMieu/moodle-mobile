@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.moodle_usth_mobile_app.ui.theme.LocalAppColors
 
 @Composable
 fun BadgeItem(
@@ -19,11 +20,14 @@ fun BadgeItem(
     modifier: Modifier = Modifier
 ) {
     val bgColor = toneLightColor(tone)
-    // Chữ đậm hơn màu tone một bậc để đủ tương phản trên nền nhạt (đặc biệt amber/green).
-    val textColor = when (tone) {
-        "green" -> Color(0xFF047857)
-        "amber" -> Color(0xFFB45309)
-        "coral" -> Color(0xFFDC2626)
+    // Chế độ sáng: chữ đậm hơn màu tone một bậc để đủ tương phản trên nền nhạt (đặc biệt amber/green).
+    // Chế độ tối: nền đã tối nên dùng luôn màu tone (sáng).
+    val isDark = LocalAppColors.current.isDark
+    val textColor = when {
+        isDark -> toneColor(tone)
+        tone == "green" -> Color(0xFF047857)
+        tone == "amber" -> Color(0xFFB45309)
+        tone == "coral" -> Color(0xFFDC2626)
         else -> toneColor(tone)
     }
 

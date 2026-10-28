@@ -43,6 +43,42 @@ class MoodleApi(private val session: SessionStore) {
     suspend fun markNotificationRead(notificationId: String): JSONObject =
         request("POST", "/api/v1/notifications/" + encode(notificationId) + "/read", null)
 
+    /** channel = "PROGRAM" | "GENERAL" | null (tất cả). */
+    suspend fun markAllNotificationsRead(channel: String?): JSONObject {
+        val body = JSONObject()
+        if (channel != null) body.put("channel", channel)
+        return request("POST", "/api/v1/notifications/read-all", body)
+    }
+
+    // ---------------------------------------------------------- giáo viên
+
+    suspend fun teacherBootstrap(): JSONObject = request("GET", "/api/v1/teacher/bootstrap", null)
+
+    /** body: { components: [{ id?, name, weight }], bonusEnabled, bonusMax } → môn học sau khi lưu. */
+    suspend fun updateGrading(courseId: String, body: JSONObject): JSONObject =
+        request("PUT", "/api/v1/teacher/courses/" + encode(courseId) + "/grading", body)
+
+    /** body: { title, description, componentId | isBonus, weight, dueAt } → môn học sau khi tạo. */
+    suspend fun createAssignment(courseId: String, body: JSONObject): JSONObject =
+        request("POST", "/api/v1/teacher/courses/" + encode(courseId) + "/assignments", body)
+
+    suspend fun updateAssignment(assignmentId: String, body: JSONObject): JSONObject =
+        request("PUT", "/api/v1/teacher/assignments/" + encode(assignmentId), body)
+
+    suspend fun deleteAssignment(assignmentId: String): JSONObject =
+        request("DELETE", "/api/v1/teacher/assignments/" + encode(assignmentId), null)
+
+    /** → { graded, course } */
+    suspend fun autoGrade(assignmentId: String): JSONObject =
+        request("POST", "/api/v1/teacher/assignments/" + encode(assignmentId) + "/auto-grade", null)
+
+    /** body: { audience, courseId?, kind, title, body, eventAt?, location?, pinned? } → { id, audience, course, posts } */
+    suspend fun postAnnouncement(body: JSONObject): JSONObject = request("POST", "/api/v1/teacher/announcements", body)
+
+    /** → teacher bootstrap */
+    suspend fun deletePost(postId: String): JSONObject =
+        request("DELETE", "/api/v1/teacher/announcements/" + encode(postId), null)
+
     suspend fun downloadGradeReport(): DownloadedFile = withContext(Dispatchers.IO) {
         val connection = openConnection("GET", "/api/v1/reports/grades.csv")
         try {
@@ -112,5 +148,6 @@ class MoodleApi(private val session: SessionStore) {
         return ApiException(status, code, message)
     }
 
-    private fun encode(text: String): String = URLEncoder.encode(text, "UTF-8")
+    // URLEncoder đổi khoảng trắng thành "+", nhưng trong đường dẫn phải là "%20".
+    private fun encode(text: String): String = URLEncoder.encode(text, "UTF-8").replace("+", "%20")
 }

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Chuỗi của Home, Courses và các component dùng chung (thẻ môn, dòng bài tập, đếm ngược). -->
+<resources>
+    <string name="home_ring_complete">hoàn thành</string>
+    <string name="home_greeting">Chào %1$s ✨</string>
+    <string name="home_notifications">Thông báo</string>
+    <string name="home_study_space">GÓC HỌC TẬP CỦA BẠN</string>
+    <string name="home_study_space_tagline">Tập trung một chút. Tiến bộ thật nhiều.</string>
+    <string name="home_filter_todo">Cần làm</string>
+    <string name="home_filter_due_soon">Sắp hết hạn</string>
+    <string name="home_filter_recent_done">Vừa xong</string>
+    <string name="home_course_done">Đã xong %1$d/%2$d</string>
+    <string name="home_course_done_grade">Đã xong %1$d/%2$d · %3$s/%4$s</string>
+    <string name="home_course_all_caught_up">Đã xong hết</string>
+    <string name="home_row_completed_nice">Đã hoàn thành · Làm tốt lắm!</string>
+    <string name="home_row_completed">Đã hoàn thành</string>
+    <string name="home_row_component">%1$s · %2$d%%</string>
+    <string name="home_row_contribution">%1$s%% điểm môn</string>
+    <string name="home_countdown_none_label">BỚT ĐI MỘT VIỆC</string>
+    <string name="home_countdown_attention">CẦN BẠN XỬ LÝ</string>
+    <string name="home_countdown_next">HẠN NỘP GẦN NHẤT</string>
+    <string name="home_countdown_badge_done">Xong</string>
+    <string name="home_countdown_badge_24h">Hết hạn trong 24 giờ</string>
+    <string name="home_countdown_badge_coming">Sắp tới</string>
+    <string name="home_countdown_all_caught_up">Xong hết rồi, %1$s.</string>
+    <string name="home_countdown_all_done">Mọi bài tập đều đã đánh dấu hoàn thành.</string>
+    <string name="home_countdown_overdue_start">Quá hạn · bắt đầu từ đây</string>
+    <string name="home_countdown_view_done">Xem bài đã hoàn thành</string>
+    <string name="home_countdown_view_bonus">Bonus tối đa +%1$s · Xem bài</string>
+    <string name="home_countdown_view_task">%1$s%% điểm môn · Xem bài</string>
+    <string name="home_countdown_days">NGÀY</string>
+    <string name="home_countdown_hrs">GIỜ</string>
+    <string name="home_countdown_min">PHÚT</string>
+    <string name="home_countdown_sec">GIÂY</string>
+    <string name="home_priorities_title">Ưu tiên của bạn</string>
+    <string name="home_priorities_hint">Bài chưa xong, hạn nộp gần nhất đứng đầu.</string>
+    <string name="home_priorities_empty">Không còn hạn nộp nào sắp tới. Thư thả chút nhé.</string>
+    <string name="home_all_assignments">Tất cả bài tập</string>
+    <string name="home_your_courses">Môn học của bạn</string>
+    <string name="home_see_all">Xem tất cả</string>
+    <string name="home_footer">Mỗi ngày tiến bộ một chút.</string>
+    <string name="home_my_courses">Môn học của tôi</string>
+    <string name="home_planner">Kế hoạch tuần</string>
+    <string name="home_in_progress">Đang học</string>
+    <string name="home_courses_footer">Chọn một môn để xem bài tập và tài liệu.</string>
+    <plurals name="home_notifications_unread">
+        <item quantity="other">Thông báo · %d chưa đọc</item>
+    </plurals>
+    <plurals name="home_course_code_credits">
+        <item quantity="other">%1$s · %2$d TÍN CHỈ</item>
+    </plurals>
+    <plurals name="home_course_to_do">
+        <item quantity="other">Còn %d bài</item>
+    </plurals>
+    <plurals name="home_overdue_warning">
+        <item quantity="other">%d bài đã quá hạn · xem bài cần xử lý</item>
+    </plurals>
+    <plurals name="home_credits">
+        <item quantity="other">%d tín chỉ</item>
+    </plurals>
+</resources>

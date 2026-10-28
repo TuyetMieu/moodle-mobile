@@ -29,18 +29,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.moodle_usth_mobile_app.R
 import com.example.moodle_usth_mobile_app.data.model.Course
 import com.example.moodle_usth_mobile_app.ui.MainViewModel
 import com.example.moodle_usth_mobile_app.ui.components.BadgeItem
 import com.example.moodle_usth_mobile_app.ui.components.CourseCard
+import com.example.moodle_usth_mobile_app.ui.theme.CardBorderLight
+import com.example.moodle_usth_mobile_app.ui.theme.CardSurface
 import com.example.moodle_usth_mobile_app.ui.theme.PrimaryIndigo
 import com.example.moodle_usth_mobile_app.ui.theme.SurfaceLight
 import com.example.moodle_usth_mobile_app.ui.theme.TextPrimary
 import com.example.moodle_usth_mobile_app.ui.theme.TextSecondary
+import java.util.Locale
 
 @Composable
 fun CoursesScreen(
@@ -74,7 +79,7 @@ fun CoursesScreen(
                     letterSpacing = 0.5.sp
                 )
                 Text(
-                    text = "My courses",
+                    text = stringResource(R.string.home_my_courses),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary
@@ -85,11 +90,11 @@ fun CoursesScreen(
                 onClick = { viewModel.openDialog("planner") },
                 modifier = Modifier
                     .size(42.dp)
-                    .background(Color.White, CircleShape)
+                    .background(CardSurface, CircleShape)
             ) {
                 Icon(
                     imageVector = Icons.Default.CalendarMonth,
-                    contentDescription = "Planner",
+                    contentDescription = stringResource(R.string.home_planner),
                     tint = PrimaryIndigo
                 )
             }
@@ -111,7 +116,7 @@ fun CoursesScreen(
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .background(Color.White, RoundedCornerShape(14.dp))
+                        .background(CardSurface, RoundedCornerShape(14.dp))
                         .clickable { viewModel.openDialog("classwork", "todo") }
                         .padding(12.dp)
                 ) {
@@ -129,7 +134,7 @@ fun CoursesScreen(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "To do",
+                                text = stringResource(R.string.home_filter_todo),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = TextPrimary
@@ -142,7 +147,7 @@ fun CoursesScreen(
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .background(Color.White, RoundedCornerShape(14.dp))
+                        .background(CardSurface, RoundedCornerShape(14.dp))
                         .clickable { viewModel.openDialog("classwork", "urgent") }
                         .padding(12.dp)
                 ) {
@@ -160,7 +165,7 @@ fun CoursesScreen(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "Due soon",
+                                text = stringResource(R.string.home_filter_due_soon),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = TextPrimary
@@ -179,7 +184,7 @@ fun CoursesScreen(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "In progress",
+                        text = stringResource(R.string.home_in_progress),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextPrimary
@@ -187,11 +192,11 @@ fun CoursesScreen(
                     Spacer(modifier = Modifier.width(6.dp))
                     Box(
                         modifier = Modifier
-                            .background(Color(0xFFE2E8F0), RoundedCornerShape(10.dp))
+                            .background(CardBorderLight, RoundedCornerShape(10.dp))
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = String.format("%02d", courses.size),
+                            text = String.format(Locale.US, "%02d", courses.size),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextSecondary
@@ -199,7 +204,8 @@ fun CoursesScreen(
                     }
                 }
 
-                BadgeItem(text = "${totalCredits(courses)} credits", tone = "blue")
+                val credits = totalCredits(courses)
+                BadgeItem(text = pluralStringResource(R.plurals.home_credits, credits, credits), tone = "blue")
             }
 
             // Courses List
@@ -228,7 +234,7 @@ fun CoursesScreen(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "Select a course to view your classwork and resources.",
+                    text = stringResource(R.string.home_courses_footer),
                     fontSize = 12.sp,
                     color = TextSecondary
                 )

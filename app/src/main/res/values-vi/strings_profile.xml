@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- hồ sơ -->
+    <string name="prof_title">Hồ sơ của bạn</string>
+    <string name="prof_student_info">Thông tin sinh viên</string>
+    <string name="prof_student_id">Mã sinh viên</string>
+    <string name="prof_academic_year">Năm học</string>
+    <string name="prof_current_semester">Học kỳ hiện tại</string>
+    <string name="prof_academic_progress">Tiến độ học tập của tôi</string>
+    <string name="prof_synced_title">Đã đồng bộ</string>
+    <string name="prof_synced_body">Dữ liệu lấy từ %1$s. App tự làm mới khi bạn quay lại sau 5 phút; kéo xuống để làm mới ngay.</string>
+    <string name="prof_synced_body_at">Dữ liệu lấy từ %1$s lúc %2$s. App tự làm mới khi bạn quay lại sau 5 phút; kéo xuống để làm mới ngay.</string>
+    <string name="prof_demo_title">Chế độ xem thử</string>
+    <string name="prof_demo_body">Đang dùng dữ liệu mẫu đóng gói trong app. Đăng xuất để kết nối tới backend.</string>
+    <string name="prof_offline_title">Đang ngoại tuyến</string>
+    <string name="prof_offline_body">Không kết nối được %1$s. Dữ liệu hiển thị là bản đồng bộ gần nhất.</string>
+    <string name="prof_offline_body_at">Không kết nối được %1$s. Dữ liệu hiển thị là bản đồng bộ lúc %2$s.</string>
+    <string name="prof_logout_confirm_title">Đăng xuất?</string>
+    <string name="prof_logout_confirm_body">Bạn sẽ cần đăng nhập lại để xem bài tập và lịch học. Dữ liệu đã lưu trên máy sẽ bị xoá.</string>
+    <string name="prof_logout_confirm_demo">Thoát chế độ xem thử. Các đánh dấu hoàn thành tạm thời sẽ bị xoá.</string>
+
+    <!-- thông báo -->
+    <string name="notif_ui_title">Thông báo của bạn</string>
+    <string name="notif_ui_tab_program">Ngành của bạn</string>
+    <string name="notif_ui_tab_general">Thầy cô &amp; toàn trường</string>
+    <string name="notif_ui_program_hint">Sự kiện và tin tức dành cho sinh viên ngành %1$s.</string>
+    <string name="notif_ui_program_hint_generic">Sự kiện và tin tức dành cho sinh viên ngành của bạn.</string>
+    <string name="notif_ui_general_hint">Điểm, bài mới, đổi hạn nộp, tin của lớp và thông báo toàn trường.</string>
+    <string name="notif_ui_mark_all_read">Đánh dấu đã đọc tất cả</string>
+    <string name="notif_ui_deadlines">Nhắc hạn nộp</string>
+    <string name="notif_ui_all_classwork">Tất cả bài tập</string>
+    <plurals name="notif_ui_due_soon">
+        <item quantity="other">%d bài sắp hết hạn</item>
+    </plurals>
+    <string name="notif_ui_latest">Mới nhất</string>
+    <string name="notif_ui_empty_program">Chưa có tin nào cho ngành của bạn.</string>
+    <string name="notif_ui_empty_general">Chưa có tin mới từ thầy cô hay nhà trường.</string>
+    <string name="notif_ui_unread">Chưa đọc</string>
+
+    <!-- thời khoá biểu -->
+    <string name="tt_eyebrow">Sắp xếp việc học, theo cách của bạn</string>
+    <string name="tt_title">Thời khóa biểu</string>
+    <string name="tt_today">Hôm nay</string>
+    <string name="tt_this_month">Tháng này</string>
+    <string name="tt_selected_month">Tháng đã chọn</string>
+    <string name="tt_this_week">Tuần này</string>
+    <string name="tt_selected_week">Tuần đã chọn</string>
+    <string name="tt_month_tagline">Lịch cả tháng, chủ động hơn.</string>
+    <string name="tt_week_tagline">Một tuần học, thật rõ ràng.</string>
+    <plurals name="tt_sessions_unit">
+        <item quantity="other">buổi học</item>
+    </plurals>
+    <plurals name="tt_courses_count">
+        <item quantity="other">%d môn học</item>
+    </plurals>
+    <string name="tt_hours_unit">giờ học</string>
+    <string name="tt_lecture_and_lab">Lý thuyết &amp; thực hành</string>
+    <string name="tt_view_week">Tuần</string>
+    <string name="tt_view_month">Tháng</string>
+    <string name="tt_prev_month">Tháng trước</string>
+    <string name="tt_prev_week">Tuần trước</string>
+    <string name="tt_next_month">Tháng sau</string>
+    <string name="tt_next_week">Tuần sau</string>
+    <string name="tt_has_classes">Có lịch học</string>
+    <string name="tt_local_time">Giờ học theo giờ địa phương</string>
+    <plurals name="tt_day_summary">
+        <item quantity="other">%1$d buổi học · %2$s giờ</item>
+    </plurals>
+    <string name="tt_free_today">Hôm nay bạn được nghỉ</string>
+    <string name="tt_no_classes">Không có lịch học</string>
+    <string name="tt_see_day">Xem lịch %1$s</string>
+    <string name="tt_footer">Lịch học lặp lại hằng tuần trong học kỳ, đồng bộ từ máy chủ. Chạm vào một buổi học để mở lớp và bài tập.</string>
+    <string name="tt_empty_title">Một chút thời gian cho chính mình.</string>
+    <string name="tt_empty_body">Không có lịch học vào ngày này. Bạn có thể ôn bài, hoàn thành bài tập hoặc nghỉ ngơi.</string>
+    <string name="tt_hours_short">%1$s giờ</string>
+    <string name="tt_kind_lecture">Lý thuyết</string>
+    <string name="tt_kind_lab">Thực hành</string>
+    <string name="tt_live">Đang diễn ra</string>
+    <string name="tt_finished">Đã kết thúc</string>
+    <string name="tt_up_next">Sắp tới</string>
+    <plurals name="tt_credits">
+        <item quantity="other">%d tín chỉ</item>
+    </plurals>
+
+    <!-- đăng nhập -->
+    <string name="login_welcome">Chào mừng trở lại</string>
+    <string name="login_subtitle">Đăng nhập bằng tài khoản sinh viên hoặc giáo viên để xem bài tập, lịch học và tiến độ.</string>
+    <string name="login_username">Tên đăng nhập (mã SV hoặc mã GV)</string>
+    <string name="login_username_hint">VD: BA22-041 hoặc gv-minh</string>
+    <string name="login_password">Mật khẩu</string>
+    <string name="login_hide_password">Ẩn mật khẩu</string>
+    <string name="login_show_password">Hiện mật khẩu</string>
+    <string name="login_server">Máy chủ: %1$s</string>
+    <string name="login_server_address">Địa chỉ backend</string>
+    <string name="login_submit">Đăng nhập</string>
+    <string name="login_demo">Xem thử với dữ liệu mẫu</string>
+    <string name="login_demo_accounts">Tài khoản demo</string>
+    <string name="login_demo_students">Sinh viên: %1$s</string>
+    <string name="login_demo_teachers">Giáo viên: %1$s</string>
+    <string name="login_demo_password">Mật khẩu: %1$s</string>
+    <string name="login_run_backend">Chạy backend: %1$s</string>
+</resources>

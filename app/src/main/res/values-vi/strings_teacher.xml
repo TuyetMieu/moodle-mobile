@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="teacher_hello">Xin chào, %1$s</string>
+    <string name="teacher_stat_courses">Lớp dạy</string>
+    <string name="teacher_stat_students">Sinh viên</string>
+    <string name="teacher_stat_waiting">Bài chờ chấm</string>
+    <string name="teacher_stat_missing">Bài chưa nộp</string>
+    <string name="teacher_my_courses">Các lớp bạn dạy</string>
+    <string name="teacher_no_courses">Học kỳ này bạn chưa phụ trách môn nào.</string>
+    <string name="teacher_course_code_credits">%1$s · %2$d TÍN CHỈ</string>
+    <plurals name="teacher_students_count">
+        <item quantity="other">%d sinh viên</item>
+    </plurals>
+    <plurals name="teacher_assignments_count">
+        <item quantity="other">%d bài tập</item>
+    </plurals>
+    <string name="teacher_next_deadline">Hạn nộp gần nhất</string>
+    <string name="teacher_no_deadline">Không có hạn nộp sắp tới</string>
+    <string name="teacher_class_average">Điểm TB lớp</string>
+
+    <!-- trang môn học -->
+    <string name="teacher_tab_assignments">Bài tập</string>
+    <string name="teacher_tab_grading">Thang điểm</string>
+    <string name="teacher_tab_students">Sinh viên</string>
+    <string name="teacher_tab_stream">Bảng tin</string>
+    <string name="teacher_new_assignment">Bài tập mới</string>
+    <string name="teacher_edit_assignment">Sửa bài tập</string>
+    <string name="teacher_auto_grade_info">Điểm do máy chấm: bài đã nộp được chấm tự động khi qua hạn nộp (nộp muộn trừ 2 điểm). Bấm “Chấm ngay” để chấm các bài đã nộp trước hạn.</string>
+    <string name="teacher_group_empty">Thành phần này chưa có bài tập.</string>
+    <string name="teacher_contribution">%1$s%% điểm môn</string>
+    <string name="teacher_closed">Đã đóng</string>
+    <string name="teacher_due_line">Hạn %1$s · %2$s</string>
+    <string name="teacher_submission_stats">Đã nộp %1$d/%2$d · đã chấm %3$d · TB %4$s</string>
+    <string name="teacher_auto_grade_now">Chấm ngay (%1$d)</string>
+
+    <string name="teacher_grading_info">Điểm môn (thang 20) = trung bình có trọng số của các thành phần dưới đây. Tổng trọng số phải bằng 100%. Nếu bật bonus, điểm bonus được cộng thẳng vào, tối đa 20.</string>
+    <string name="teacher_component_name">Thành phần</string>
+    <string name="teacher_remove_component">Xoá %1$s</string>
+    <plurals name="teacher_component_in_use">
+        <item quantity="other">%d bài tập thuộc thành phần này · không xoá được</item>
+    </plurals>
+    <string name="teacher_add_component">Thêm thành phần</string>
+    <string name="teacher_weight_total">Tổng: %1$d%% / 100%%</string>
+    <string name="teacher_names_invalid">Mỗi thành phần cần có tên và các tên không được trùng nhau.</string>
+    <string name="teacher_bonus_title">Điểm bonus</string>
+    <string name="teacher_bonus_desc">Bài bonus cộng thêm điểm thẳng vào điểm môn (tối đa 20).</string>
+    <plurals name="teacher_bonus_in_use">
+        <item quantity="other">Đang có %d bài bonus · xoá bài bonus trước khi tắt</item>
+    </plurals>
+    <string name="teacher_bonus_max">Bonus tối đa</string>
+    <string name="teacher_decrease">Giảm</string>
+    <string name="teacher_increase">Tăng</string>
+    <string name="teacher_save_grading">Lưu thang điểm</string>
+
+    <string name="teacher_students_info">Điểm được tính tự động từ các bài máy chấm và thang điểm của môn.</string>
+    <string name="teacher_no_students">Chưa có sinh viên đăng ký.</string>
+    <string name="teacher_student_progress">Đã nộp %1$d/%2$d bài</string>
+    <plurals name="teacher_missing_count">
+        <item quantity="other">%d bài chưa nộp</item>
+    </plurals>
+    <string name="teacher_bonus_short">+%1$s bonus</string>
+
+    <string name="teacher_post_to_class">Đăng tin cho lớp</string>
+    <string name="teacher_pinned">Đã ghim</string>
+
+    <!-- form bài tập -->
+    <string name="teacher_field_title">Tiêu đề</string>
+    <string name="teacher_field_description">Mô tả</string>
+    <string name="teacher_field_component">Thành phần điểm</string>
+    <string name="teacher_field_weight">Trọng số trong thành phần</string>
+    <string name="teacher_field_weight_help">Trọng số tương đối, VD proposal 25 và final demo 75.</string>
+    <string name="teacher_contribution_preview">Bài này sẽ chiếm khoảng %1$s%% điểm môn.</string>
+    <string name="teacher_bonus_task_info">Bài bonus: điểm bài được quy đổi thành tối đa +%1$s điểm cộng vào điểm môn.</string>
+    <string name="teacher_field_due">Hạn nộp</string>
+    <string name="teacher_due_change_notice">Sinh viên sẽ nhận thông báo đổi hạn nộp.</string>
+    <string name="teacher_create">Tạo bài tập</string>
+    <string name="teacher_delete_title">Xoá?</string>
+    <string name="teacher_delete_assignment_question">Xoá “%1$s”? Các lượt nộp của sinh viên cho bài này cũng bị xoá.</string>
+    <string name="teacher_delete_post_question">Xoá “%1$s”?</string>
+
+    <!-- đăng tin -->
+    <string name="teacher_posts_overline">Thông báo</string>
+    <string name="teacher_posts_title">Đăng tin</string>
+    <string name="teacher_composer_title">Tin mới</string>
+    <string name="teacher_audience">Gửi tới</string>
+    <string name="teacher_audience_course">Một lớp</string>
+    <string name="teacher_audience_program">Ngành %1$s</string>
+    <string name="teacher_audience_all">Toàn trường</string>
+    <string name="teacher_audience_course_help">Hiện trên bảng tin của lớp và gửi thông báo cho sinh viên của lớp.</string>
+    <string name="teacher_audience_program_help">Gửi tới mọi sinh viên ngành %1$s, ở tab “Ngành của bạn”.</string>
+    <string name="teacher_audience_all_help">Gửi tới mọi sinh viên, ở tab “Thầy cô &amp; toàn trường”.</string>
+    <string name="teacher_field_course">Lớp</string>
+    <string name="teacher_field_kind">Loại tin</string>
+    <string name="teacher_kind_notice">Thông báo</string>
+    <string name="teacher_kind_event">Sự kiện</string>
+    <string name="teacher_field_body">Nội dung</string>
+    <string name="teacher_field_event_at">Ngày giờ diễn ra</string>
+    <string name="teacher_event_in_past">Sự kiện phải ở tương lai.</string>
+    <string name="teacher_field_location">Địa điểm (không bắt buộc)</string>
+    <string name="teacher_pin">Ghim lên đầu bảng tin</string>
+    <string name="teacher_publish">Đăng</string>
+    <string name="teacher_my_posts">Tin đã đăng cho ngành &amp; toàn trường</string>
+    <string name="teacher_my_posts_help">Tin của lớp nằm ở tab Bảng tin của từng lớp.</string>
+    <string name="teacher_no_posts">Bạn chưa đăng tin nào.</string>
+
+    <!-- hồ sơ -->
+    <string name="teacher_profile_overline">Giảng viên</string>
+    <string name="teacher_profile_title">Hồ sơ của bạn</string>
+    <string name="teacher_staff_code">Mã cán bộ</string>
+    <string name="teacher_program">Ngành</string>
+    <string name="teacher_semester">Học kỳ</string>
+    <string name="teacher_server">Kết nối tới %1$s</string>
+    <string name="teacher_logout_title">Đăng xuất?</string>
+    <string name="teacher_logout_text">Bạn sẽ cần đăng nhập lại để quản lý lớp học.</string>
+
+    <!-- snackbar -->
+    <string name="teacher_msg_grading_saved">Đã lưu thang điểm · điểm sinh viên đã được tính lại.</string>
+    <string name="teacher_msg_assignment_created">Đã tạo bài tập · sinh viên đã nhận thông báo.</string>
+    <string name="teacher_msg_assignment_saved">Đã lưu bài tập.</string>
+    <string name="teacher_msg_assignment_deleted">Đã xoá bài tập.</string>
+    <string name="teacher_msg_nothing_to_grade">Không có bài nào cần chấm.</string>
+    <plurals name="teacher_msg_graded">
+        <item quantity="other">Máy đã chấm %d bài.</item>
+    </plurals>
+    <string name="teacher_msg_posted">Đã đăng tin.</string>
+    <string name="teacher_msg_post_deleted">Đã xoá tin.</string>
+</resources>

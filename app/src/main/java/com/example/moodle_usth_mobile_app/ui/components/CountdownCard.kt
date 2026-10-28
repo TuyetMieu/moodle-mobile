@@ -42,13 +42,17 @@ import com.example.moodle_usth_mobile_app.data.model.Assignment
 import com.example.moodle_usth_mobile_app.data.model.AssignmentStatus
 import com.example.moodle_usth_mobile_app.ui.theme.AccentCoral
 import com.example.moodle_usth_mobile_app.ui.theme.AccentGreen
-import com.example.moodle_usth_mobile_app.ui.theme.MoodleDarkBg
-import com.example.moodle_usth_mobile_app.ui.theme.MoodleDarkCard
-import com.example.moodle_usth_mobile_app.ui.theme.TextSecondary
+import com.example.moodle_usth_mobile_app.data.model.formatScore
+import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.delay
+import java.util.Locale
 
 /** Indigo nhạt để link đủ tương phản trên nền tối của thẻ deadline. */
 private val LinkOnDark = Color(0xFFA5B4FC)
+
+/** Thẻ deadline luôn nền tối (ở cả chế độ sáng và tối) — chữ trên thẻ luôn sáng. */
+private val HeroDarkBg = Color(0xFF0F172A)
+private val HeroDarkCell = Color(0xFF1E293B)
 
 @Composable
 fun CountdownCard(
@@ -61,7 +65,7 @@ fun CountdownCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MoodleDarkBg)
+        colors = CardDefaults.cardColors(containerColor = HeroDarkBg)
     ) {
         Box(modifier = Modifier.padding(18.dp)) {
             Column {
@@ -82,9 +86,9 @@ fun CountdownCard(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = if (nextAssignment == null) "ONE LESS THING TO DO"
-                            else if (status == AssignmentStatus.OVERDUE) "NEEDS YOUR ATTENTION"
-                            else "YOUR NEXT DEADLINE",
+                            text = if (nextAssignment == null) stringResource(R.string.home_countdown_none_label)
+                            else if (status == AssignmentStatus.OVERDUE) stringResource(R.string.home_countdown_attention)
+                            else stringResource(R.string.home_countdown_next),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White.copy(alpha = 0.8f),
@@ -93,10 +97,10 @@ fun CountdownCard(
                     }
 
                     BadgeItem(
-                        text = if (nextAssignment == null) "Done"
-                        else if (status == AssignmentStatus.OVERDUE) "Overdue"
-                        else if (status == AssignmentStatus.URGENT) "Due within 24h"
-                        else "Coming up",
+                        text = if (nextAssignment == null) stringResource(R.string.home_countdown_badge_done)
+                        else if (status == AssignmentStatus.OVERDUE) stringResource(R.string.time_left_overdue)
+                        else if (status == AssignmentStatus.URGENT) stringResource(R.string.home_countdown_badge_24h)
+                        else stringResource(R.string.home_countdown_badge_coming),
                         tone = if (nextAssignment == null) "green"
                         else if (status == AssignmentStatus.OVERDUE) "coral"
                         else "blue"
@@ -107,7 +111,7 @@ fun CountdownCard(
 
                 // Title
                 Text(
-                    text = nextAssignment?.title ?: "All caught up, $firstName.",
+                    text = nextAssignment?.title ?: stringResource(R.string.home_countdown_all_caught_up, firstName),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -128,14 +132,14 @@ fun CountdownCard(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "Every assignment is marked as done.",
+                                    text = stringResource(R.string.home_countdown_all_done),
                                     color = Color.White.copy(alpha = 0.9f),
                                     fontSize = 13.sp
                                 )
                             }
                         } else if (status == AssignmentStatus.OVERDUE) {
                             Text(
-                                text = "Overdue · start here",
+                                text = stringResource(R.string.home_countdown_overdue_start),
                                 color = AccentCoral,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 15.sp
@@ -163,7 +167,13 @@ fun CountdownCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (nextAssignment != null) "${nextAssignment.contribution}% of course grade · View task" else "View completed work",
+                        text = when {
+                            nextAssignment == null -> stringResource(R.string.home_countdown_view_done)
+                            nextAssignment.isBonus -> stringResource(
+                                R.string.home_countdown_view_bonus, formatScore(nextAssignment.bonusMax ?: 0.0)
+                            )
+                            else -> stringResource(R.string.home_countdown_view_task, formatScore(nextAssignment.contribution ?: 0.0))
+                        },
                         color = LinkOnDark,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 13.sp
@@ -193,19 +203,28 @@ private fun LiveCountdownTimer(dueAtEpochMs: Long) {
     }
 
     val remainingSec = ((dueAtEpochMs - nowMs) / 1000L).coerceAtLeast(0L)
-    val hrs = remainingSec / 3600
+    val days = remainingSec / 86_400
+    val hrs = (remainingSec % 86_400) / 3600
     val mins = (remainingSec % 3600) / 60
     val secs = remainingSec % 60
+
+    // Còn từ 1 ngày trở lên: NGÀY : GIỜ : PHÚT; dưới 1 ngày: GIỜ : PHÚT : GIÂY.
+    val parts = if (days > 0) {
+        listOf(days to stringResource(R.string.home_countdown_days), hrs to stringResource(R.string.home_countdown_hrs),
+            mins to stringResource(R.string.home_countdown_min))
+    } else {
+        listOf(hrs to stringResource(R.string.home_countdown_hrs), mins to stringResource(R.string.home_countdown_min),
+            secs to stringResource(R.string.home_countdown_sec))
+    }
 
     Row(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        CountdownPart(value = String.format("%02d", hrs), label = "HRS")
-        Text(text = ":", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-        CountdownPart(value = String.format("%02d", mins), label = "MIN")
-        Text(text = ":", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-        CountdownPart(value = String.format("%02d", secs), label = "SEC")
+        parts.forEachIndexed { index, (value, label) ->
+            if (index > 0) Text(text = ":", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            CountdownPart(value = String.format(Locale.US, "%02d", value), label = label)
+        }
     }
 }
 
@@ -213,7 +232,7 @@ private fun LiveCountdownTimer(dueAtEpochMs: Long) {
 private fun CountdownPart(value: String, label: String) {
     Box(
         modifier = Modifier
-            .background(MoodleDarkCard, RoundedCornerShape(8.dp))
+            .background(HeroDarkCell, RoundedCornerShape(8.dp))
             .padding(horizontal = 10.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center
     ) {

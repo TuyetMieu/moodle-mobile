@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="teacher_hello">Bonjour, %1$s</string>
+    <string name="teacher_stat_courses">Cours</string>
+    <string name="teacher_stat_students">Étudiants</string>
+    <string name="teacher_stat_waiting">À noter</string>
+    <string name="teacher_stat_missing">Rendus manquants</string>
+    <string name="teacher_my_courses">Vos cours</string>
+    <string name="teacher_no_courses">Vous n\'enseignez aucun cours ce semestre.</string>
+    <string name="teacher_course_code_credits">%1$s · %2$d CRÉDITS</string>
+    <plurals name="teacher_students_count">
+        <item quantity="one">%d étudiant</item>
+        <item quantity="many">%d étudiants</item>
+        <item quantity="other">%d étudiants</item>
+    </plurals>
+    <plurals name="teacher_assignments_count">
+        <item quantity="one">%d devoir</item>
+        <item quantity="many">%d devoirs</item>
+        <item quantity="other">%d devoirs</item>
+    </plurals>
+    <string name="teacher_next_deadline">Prochaine échéance</string>
+    <string name="teacher_no_deadline">Aucune échéance à venir</string>
+    <string name="teacher_class_average">Moyenne de la classe</string>
+
+    <!-- trang môn học -->
+    <string name="teacher_tab_assignments">Devoirs</string>
+    <string name="teacher_tab_grading">Barème</string>
+    <string name="teacher_tab_students">Étudiants</string>
+    <string name="teacher_tab_stream">Fil</string>
+    <string name="teacher_new_assignment">Nouveau devoir</string>
+    <string name="teacher_edit_assignment">Modifier le devoir</string>
+    <string name="teacher_auto_grade_info">Les notes sont attribuées par la machine : chaque devoir rendu est noté automatiquement après l\'échéance (−2 points en cas de retard). « Noter maintenant » note les rendus avant l\'échéance.</string>
+    <string name="teacher_group_empty">Aucun devoir dans cette composante pour l\'instant.</string>
+    <string name="teacher_contribution">%1$s %% du cours</string>
+    <string name="teacher_closed">Clos</string>
+    <string name="teacher_due_line">À rendre le %1$s · %2$s</string>
+    <string name="teacher_submission_stats">Rendus %1$d/%2$d · notés %3$d · moyenne %4$s</string>
+    <string name="teacher_auto_grade_now">Noter maintenant (%1$d)</string>
+
+    <string name="teacher_grading_info">Note du cours (sur 20) = moyenne pondérée des composantes ci-dessous. La somme des coefficients doit faire 100 %. Si le bonus est activé, il s\'ajoute directement à la note, plafonnée à 20.</string>
+    <string name="teacher_component_name">Composante</string>
+    <string name="teacher_remove_component">Supprimer %1$s</string>
+    <plurals name="teacher_component_in_use">
+        <item quantity="one">%d devoir utilise cette composante · suppression impossible</item>
+        <item quantity="many">%d devoirs utilisent cette composante · suppression impossible</item>
+        <item quantity="other">%d devoirs utilisent cette composante · suppression impossible</item>
+    </plurals>
+    <string name="teacher_add_component">Ajouter une composante</string>
+    <string name="teacher_weight_total">Total : %1$d %% / 100 %%</string>
+    <string name="teacher_names_invalid">Chaque composante doit avoir un nom, et les noms doivent être différents.</string>
+    <string name="teacher_bonus_title">Points bonus</string>
+    <string name="teacher_bonus_desc">Les devoirs bonus ajoutent des points directement à la note du cours (max 20).</string>
+    <plurals name="teacher_bonus_in_use">
+        <item quantity="one">%d devoir bonus existe · supprimez-le pour désactiver le bonus</item>
+        <item quantity="many">%d devoirs bonus existent · supprimez-les pour désactiver le bonus</item>
+        <item quantity="other">%d devoirs bonus existent · supprimez-les pour désactiver le bonus</item>
+    </plurals>
+    <string name="teacher_bonus_max">Bonus maximal</string>
+    <string name="teacher_decrease">Diminuer</string>
+    <string name="teacher_increase">Augmenter</string>
+    <string name="teacher_save_grading">Enregistrer le barème</string>
+
+    <string name="teacher_students_info">Les notes sont calculées automatiquement à partir des devoirs notés par la machine et du barème.</string>
+    <string name="teacher_no_students">Aucun étudiant inscrit pour l\'instant.</string>
+    <string name="teacher_student_progress">%1$d/%2$d devoirs rendus</string>
+    <plurals name="teacher_missing_count">
+        <item quantity="one">%d manquant</item>
+        <item quantity="many">%d manquants</item>
+        <item quantity="other">%d manquants</item>
+    </plurals>
+    <string name="teacher_bonus_short">+%1$s bonus</string>
+
+    <string name="teacher_post_to_class">Publier dans ce cours</string>
+    <string name="teacher_pinned">Épinglé</string>
+
+    <!-- form bài tập -->
+    <string name="teacher_field_title">Titre</string>
+    <string name="teacher_field_description">Description</string>
+    <string name="teacher_field_component">Composante de la note</string>
+    <string name="teacher_field_weight">Poids dans la composante</string>
+    <string name="teacher_field_weight_help">Poids relatif, par ex. proposition 25 et démo finale 75.</string>
+    <string name="teacher_contribution_preview">Ce devoir comptera pour environ %1$s %% de la note du cours.</string>
+    <string name="teacher_bonus_task_info">Devoir bonus : sa note est convertie en au plus +%1$s points ajoutés à la note du cours.</string>
+    <string name="teacher_field_due">Échéance</string>
+    <string name="teacher_due_change_notice">Les étudiants seront prévenus du changement d\'échéance.</string>
+    <string name="teacher_create">Créer le devoir</string>
+    <string name="teacher_delete_title">Supprimer ?</string>
+    <string name="teacher_delete_assignment_question">Supprimer « %1$s » ? Les rendus des étudiants pour ce devoir seront supprimés.</string>
+    <string name="teacher_delete_post_question">Supprimer « %1$s » ?</string>
+
+    <!-- đăng tin -->
+    <string name="teacher_posts_overline">Annonces</string>
+    <string name="teacher_posts_title">Publier</string>
+    <string name="teacher_composer_title">Nouvelle publication</string>
+    <string name="teacher_audience">Destinataires</string>
+    <string name="teacher_audience_course">Un cours</string>
+    <string name="teacher_audience_program">Filière %1$s</string>
+    <string name="teacher_audience_all">Toute l\'école</string>
+    <string name="teacher_audience_course_help">Apparaît dans le fil du cours et prévient ses étudiants.</string>
+    <string name="teacher_audience_program_help">Pour tous les étudiants de %1$s, dans l\'onglet « Votre filière ».</string>
+    <string name="teacher_audience_all_help">Pour tous les étudiants, dans l\'onglet « Enseignants &amp; école ».</string>
+    <string name="teacher_field_course">Cours</string>
+    <string name="teacher_field_kind">Type</string>
+    <string name="teacher_kind_notice">Annonce</string>
+    <string name="teacher_kind_event">Événement</string>
+    <string name="teacher_field_body">Message</string>
+    <string name="teacher_field_event_at">Date et heure de l\'événement</string>
+    <string name="teacher_event_in_past">L\'événement doit être dans le futur.</string>
+    <string name="teacher_field_location">Lieu (facultatif)</string>
+    <string name="teacher_pin">Épingler en haut du fil</string>
+    <string name="teacher_publish">Publier</string>
+    <string name="teacher_my_posts">Vos publications filière &amp; école</string>
+    <string name="teacher_my_posts_help">Les publications de cours se trouvent dans l\'onglet Fil de chaque cours.</string>
+    <string name="teacher_no_posts">Vous n\'avez encore rien publié.</string>
+
+    <!-- hồ sơ -->
+    <string name="teacher_profile_overline">Enseignant</string>
+    <string name="teacher_profile_title">Votre profil</string>
+    <string name="teacher_staff_code">Matricule</string>
+    <string name="teacher_program">Filière</string>
+    <string name="teacher_semester">Semestre</string>
+    <string name="teacher_server">Connecté à %1$s</string>
+    <string name="teacher_logout_title">Se déconnecter ?</string>
+    <string name="teacher_logout_text">Vous devrez vous reconnecter pour gérer vos cours.</string>
+
+    <!-- snackbar -->
+    <string name="teacher_msg_grading_saved">Barème enregistré · notes des étudiants recalculées.</string>
+    <string name="teacher_msg_assignment_created">Devoir créé · les étudiants ont été prévenus.</string>
+    <string name="teacher_msg_assignment_saved">Devoir enregistré.</string>
+    <string name="teacher_msg_assignment_deleted">Devoir supprimé.</string>
+    <string name="teacher_msg_nothing_to_grade">Rien à noter : aucun nouveau rendu.</string>
+    <plurals name="teacher_msg_graded">
+        <item quantity="one">La machine a noté %d rendu.</item>
+        <item quantity="many">La machine a noté %d rendus.</item>
+        <item quantity="other">La machine a noté %d rendus.</item>
+    </plurals>
+    <string name="teacher_msg_posted">Publié.</string>
+    <string name="teacher_msg_post_deleted">Publication supprimée.</string>
+</resources>

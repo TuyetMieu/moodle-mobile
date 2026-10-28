@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Chuỗi của Home, Courses và các component dùng chung (thẻ môn, dòng bài tập, đếm ngược). -->
+<resources>
+    <string name="home_ring_complete">terminé</string>
+    <string name="home_greeting">Bonjour %1$s ✨</string>
+    <string name="home_notifications">Notifications</string>
+    <string name="home_study_space">VOTRE ESPACE D\'ÉTUDE</string>
+    <string name="home_study_space_tagline">Un peu de concentration, beaucoup de progrès.</string>
+    <string name="home_filter_todo">À faire</string>
+    <string name="home_filter_due_soon">Bientôt dû</string>
+    <string name="home_filter_recent_done">Terminés récemment</string>
+    <string name="home_course_done">%1$d/%2$d terminés</string>
+    <string name="home_course_done_grade">%1$d/%2$d terminés · %3$s/%4$s</string>
+    <string name="home_course_all_caught_up">Tout est à jour</string>
+    <string name="home_row_completed_nice">Terminé · Bravo !</string>
+    <string name="home_row_completed">Terminé</string>
+    <string name="home_row_component">%1$s · %2$d %%</string>
+    <string name="home_row_contribution">%1$s %% du cours</string>
+    <string name="home_countdown_none_label">UNE CHOSE DE MOINS</string>
+    <string name="home_countdown_attention">À TRAITER EN PRIORITÉ</string>
+    <string name="home_countdown_next">VOTRE PROCHAINE ÉCHÉANCE</string>
+    <string name="home_countdown_badge_done">Terminé</string>
+    <string name="home_countdown_badge_24h">Dans moins de 24 h</string>
+    <string name="home_countdown_badge_coming">À venir</string>
+    <string name="home_countdown_all_caught_up">Tout est à jour, %1$s.</string>
+    <string name="home_countdown_all_done">Tous les devoirs sont marqués comme terminés.</string>
+    <string name="home_countdown_overdue_start">En retard · commencez ici</string>
+    <string name="home_countdown_view_done">Voir les travaux terminés</string>
+    <string name="home_countdown_view_bonus">Bonus jusqu\'à +%1$s · Voir le devoir</string>
+    <string name="home_countdown_view_task">%1$s %% de la note du cours · Voir le devoir</string>
+    <string name="home_countdown_days">JOURS</string>
+    <string name="home_countdown_hrs">H</string>
+    <string name="home_countdown_min">MIN</string>
+    <string name="home_countdown_sec">S</string>
+    <string name="home_priorities_title">Vos priorités</string>
+    <string name="home_priorities_hint">Travaux non terminés, échéance la plus proche en premier.</string>
+    <string name="home_priorities_empty">Aucune échéance à venir. Profitez-en pour souffler.</string>
+    <string name="home_all_assignments">Tous les devoirs</string>
+    <string name="home_your_courses">Vos cours</string>
+    <string name="home_see_all">Tout voir</string>
+    <string name="home_footer">Un petit progrès, chaque jour.</string>
+    <string name="home_my_courses">Mes cours</string>
+    <string name="home_planner">Planning</string>
+    <string name="home_in_progress">En cours</string>
+    <string name="home_courses_footer">Choisissez un cours pour voir vos devoirs et ressources.</string>
+    <plurals name="home_notifications_unread">
+        <item quantity="one">Notifications · %d non lue</item>
+        <item quantity="many">Notifications · %d non lues</item>
+        <item quantity="other">Notifications · %d non lues</item>
+    </plurals>
+    <plurals name="home_course_code_credits">
+        <item quantity="one">%1$s · %2$d CRÉDIT</item>
+        <item quantity="many">%1$s · %2$d CRÉDITS</item>
+        <item quantity="other">%1$s · %2$d CRÉDITS</item>
+    </plurals>
+    <plurals name="home_course_to_do">
+        <item quantity="one">%d à faire</item>
+        <item quantity="many">%d à faire</item>
+        <item quantity="other">%d à faire</item>
+    </plurals>
+    <plurals name="home_overdue_warning">
+        <item quantity="one">%d devoir en retard · voir ce qui est urgent</item>
+        <item quantity="many">%d devoirs en retard · voir ce qui est urgent</item>
+        <item quantity="other">%d devoirs en retard · voir ce qui est urgent</item>
+    </plurals>
+    <plurals name="home_credits">
+        <item quantity="one">%d crédit</item>
+        <item quantity="many">%d crédits</item>
+        <item quantity="other">%d crédits</item>
+    </plurals>
+</resources>

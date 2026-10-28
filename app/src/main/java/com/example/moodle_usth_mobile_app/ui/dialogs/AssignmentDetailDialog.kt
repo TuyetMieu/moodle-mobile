@@ -28,30 +28,33 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.moodle_usth_mobile_app.R
 import com.example.moodle_usth_mobile_app.data.model.AssignmentStatus
+import com.example.moodle_usth_mobile_app.data.model.MAX_SCORE
 import com.example.moodle_usth_mobile_app.data.model.formatGrade
+import com.example.moodle_usth_mobile_app.data.model.formatScore
 import com.example.moodle_usth_mobile_app.ui.Formatters
 import com.example.moodle_usth_mobile_app.ui.MainViewModel
 import com.example.moodle_usth_mobile_app.ui.components.BadgeItem
 import com.example.moodle_usth_mobile_app.ui.theme.AccentGreen
 import com.example.moodle_usth_mobile_app.ui.theme.AccentGreenLight
 import com.example.moodle_usth_mobile_app.ui.theme.CardBorderLight
+import com.example.moodle_usth_mobile_app.ui.theme.OnAccent
 import com.example.moodle_usth_mobile_app.ui.theme.PrimaryIndigo
 import com.example.moodle_usth_mobile_app.ui.theme.SurfaceLight
 import com.example.moodle_usth_mobile_app.ui.theme.TextPrimary
 import com.example.moodle_usth_mobile_app.ui.theme.TextSecondary
-import java.util.Locale
 
 @Composable
 fun AssignmentDetailDialog(
@@ -65,21 +68,27 @@ fun AssignmentDetailDialog(
     val status = viewModel.getAssignmentStatus(assignment)
     val isDone = status == AssignmentStatus.DONE
     val isSaving = viewModel.savingAssignmentId == assignmentId
+    val maxText = formatScore(assignment.maxScore)
 
-    AppModal(title = "Assignment details", onDismiss = onDismiss) {
-        BadgeItem(
-            text = when (status) {
-                AssignmentStatus.DONE -> "Completed"
-                AssignmentStatus.OVERDUE -> "Overdue"
-                AssignmentStatus.URGENT -> "Due within 24 hours"
-                AssignmentStatus.UPCOMING -> "Upcoming"
-            },
-            tone = when (status) {
-                AssignmentStatus.DONE -> "green"
-                AssignmentStatus.OVERDUE, AssignmentStatus.URGENT -> "coral"
-                AssignmentStatus.UPCOMING -> "amber"
-            }
-        )
+    AppModal(title = stringResource(R.string.course_assignment_title), onDismiss = onDismiss) {
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+            BadgeItem(
+                text = stringResource(
+                    when (status) {
+                        AssignmentStatus.DONE -> R.string.course_status_done
+                        AssignmentStatus.OVERDUE -> R.string.course_status_overdue
+                        AssignmentStatus.URGENT -> R.string.course_status_urgent
+                        AssignmentStatus.UPCOMING -> R.string.course_status_upcoming
+                    }
+                ),
+                tone = when (status) {
+                    AssignmentStatus.DONE -> "green"
+                    AssignmentStatus.OVERDUE, AssignmentStatus.URGENT -> "coral"
+                    AssignmentStatus.UPCOMING -> "amber"
+                }
+            )
+            if (assignment.isBonus) BadgeItem(text = stringResource(R.string.common_bonus), tone = "green")
+        }
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(text = assignment.title, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = TextPrimary, lineHeight = 25.sp)
             Text(text = assignment.courseTitle, fontSize = 13.sp, color = TextSecondary)
@@ -88,12 +97,24 @@ fun AssignmentDetailDialog(
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             MetaLine(
                 Icons.Default.Schedule,
-                "${if (isDone) "Completed" else viewModel.formatTimeRemaining(assignment)} · Due ${Formatters.dueDate(assignment.dueAtEpochMs)}"
+                stringResource(
+                    R.string.course_due_line,
+                    if (isDone) stringResource(R.string.course_status_done) else viewModel.formatTimeRemaining(assignment),
+                    Formatters.dueDate(assignment.dueAtEpochMs)
+                )
             )
-            MetaLine(Icons.Outlined.TrackChanges, assignment.weightLabel)
+            val contribution = assignment.contribution
+            MetaLine(
+                Icons.Outlined.TrackChanges,
+                if (assignment.isBonus) stringResource(R.string.common_bonus_up_to, formatScore(assignment.bonusMax ?: 0.0))
+                else if (contribution != null) stringResource(R.string.course_contribution_line, formatScore(contribution))
+                else assignment.componentName ?: ""
+            )
         }
 
-        Text(text = assignment.description, fontSize = 13.sp, color = TextPrimary, lineHeight = 19.sp)
+        if (assignment.description.isNotBlank()) {
+            Text(text = assignment.description, fontSize = 13.sp, color = TextPrimary, lineHeight = 19.sp)
+        }
 
         // Kết quả chấm (nếu có)
         val score = assignment.score
@@ -106,16 +127,28 @@ fun AssignmentDetailDialog(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "Your grade", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextPrimary, modifier = Modifier.weight(1f))
+                    Text(
+                        text = stringResource(R.string.course_your_grade),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary,
+                        modifier = Modifier.weight(1f)
+                    )
                     Text(
                         text = buildAnnotatedString {
                             append(formatGrade(score))
-                            withStyle(SpanStyle(fontSize = 12.sp, color = TextSecondary)) { append(" / ${assignment.maxScore.toInt()}") }
+                            withStyle(SpanStyle(fontSize = 12.sp, color = TextSecondary)) { append(" / $maxText") }
                         },
                         fontSize = 20.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = AccentGreen
                     )
+                }
+                if (assignment.isAutoGraded || assignment.late) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        if (assignment.isAutoGraded) BadgeItem(text = stringResource(R.string.common_auto_graded), tone = "sky")
+                        if (assignment.late) BadgeItem(text = stringResource(R.string.course_late_penalty), tone = "coral")
+                    }
                 }
                 val feedback = assignment.feedback
                 if (feedback != null) {
@@ -126,6 +159,9 @@ fun AssignmentDetailDialog(
                     }
                 }
             }
+        } else if (isDone) {
+            // Đã nộp, chưa có điểm: máy chấm sẽ chấm sau hạn nộp.
+            InlineInfo(text = stringResource(R.string.course_waiting_auto_grade), icon = Icons.Default.Schedule)
         }
 
         // How this task counts
@@ -139,44 +175,83 @@ fun AssignmentDetailDialog(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Outlined.TrackChanges, contentDescription = null, tint = PrimaryIndigo, modifier = Modifier.size(19.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "How this task counts", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                Text(text = stringResource(R.string.course_how_it_counts), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
             }
-            ImpactRow("Component") {
-                Text(text = assignment.category.label, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                Spacer(modifier = Modifier.width(6.dp))
-                BadgeItem(text = "${assignment.category.weight}% of course", tone = assignment.category.tone)
-            }
-            ImpactRow("This assignment") {
+            if (assignment.isBonus) {
+                val bonusMax = formatScore(assignment.bonusMax ?: course?.bonusMax ?: 0.0)
+                ImpactRow(stringResource(R.string.course_component)) {
+                    Text(text = stringResource(R.string.common_bonus), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    BadgeItem(text = stringResource(R.string.course_bonus_max, bonusMax), tone = "green")
+                }
                 Text(
-                    text = buildAnnotatedString {
-                        withStyle(SpanStyle(fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = PrimaryIndigo)) { append("${assignment.contribution}%") }
-                        append(" of the final course grade")
-                    },
+                    text = stringResource(R.string.course_bonus_explain, bonusMax, maxText),
                     fontSize = 11.sp,
-                    color = TextSecondary
+                    color = TextSecondary,
+                    lineHeight = 15.sp
                 )
-            }
-            if (course != null) {
-                ImpactRow("Course credits") {
-                    Icon(Icons.Default.School, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "${course.credits} credits", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+            } else {
+                val componentName = assignment.componentName
+                val componentWeight = assignment.componentWeight
+                if (componentName != null) {
+                    ImpactRow(stringResource(R.string.course_component)) {
+                        Text(text = componentName, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                        if (componentWeight != null) {
+                            Spacer(modifier = Modifier.width(6.dp))
+                            BadgeItem(text = stringResource(R.string.course_of_course, componentWeight), tone = "purple")
+                        }
+                    }
+                }
+                val contribution = assignment.contribution
+                if (contribution != null) {
+                    ImpactRow(stringResource(R.string.course_this_assignment)) {
+                        val percent = stringResource(R.string.course_percent_value, formatScore(contribution))
+                        Text(
+                            text = buildAnnotatedString {
+                                withStyle(SpanStyle(fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = PrimaryIndigo)) { append(percent) }
+                                append(" ")
+                                append(stringResource(R.string.course_of_final_grade))
+                            },
+                            fontSize = 11.sp,
+                            color = TextSecondary
+                        )
+                    }
+                }
+                if (course != null) {
+                    ImpactRow(stringResource(R.string.course_credits_label)) {
+                        Icon(Icons.Default.School, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = pluralStringResource(R.plurals.course_credits_count, course.credits, course.credits),
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = TextPrimary
+                        )
+                    }
+                }
+                if (contribution != null) {
+                    // 20/20 ở bài này đóng góp tối đa contribution% × 20 điểm vào điểm môn (thang 20).
+                    val points = formatGrade(contribution / 100.0 * MAX_SCORE)
+                    Text(
+                        text = stringResource(R.string.course_max_points_explain, maxText, points),
+                        fontSize = 11.sp,
+                        color = TextSecondary,
+                        lineHeight = 15.sp
+                    )
                 }
             }
-            Text(
-                text = "A 10/10 score on this task contributes up to ${String.format(Locale.US, "%.2f", assignment.contribution / 10.0)} points to your course grade out of 10.",
-                fontSize = 11.sp,
-                color = TextSecondary,
-                lineHeight = 15.sp
-            )
         }
 
-        InlineInfo(
-            text = buildAnnotatedString {
-                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append("Course weight is not GPA weight. ") }
-                append("This task contributes ${assignment.contribution}% to this course. GPA uses final course grades weighted by credits, with the university's official grade conversion.")
-            }
-        )
+        val contribution = assignment.contribution
+        if (!assignment.isBonus && contribution != null) {
+            InlineInfo(
+                text = buildAnnotatedString {
+                    withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(stringResource(R.string.course_gpa_note_title)) }
+                    append(" ")
+                    append(stringResource(R.string.course_gpa_note_body, formatScore(contribution)))
+                }
+            )
+        }
 
         when {
             !isDone -> Button(
@@ -188,7 +263,7 @@ fun AssignmentDetailDialog(
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo)
             ) {
-                ButtonContent(isSaving, Icons.Default.Check, "Mark as done")
+                ButtonContent(isSaving, Icons.Default.Check, stringResource(R.string.course_mark_done))
             }
             assignment.isGraded -> Button(
                 onClick = {},
@@ -198,7 +273,7 @@ fun AssignmentDetailDialog(
                     .height(50.dp),
                 shape = RoundedCornerShape(14.dp)
             ) {
-                ButtonContent(false, Icons.Default.Check, "Graded · completed")
+                ButtonContent(false, Icons.Default.Check, stringResource(R.string.course_graded_completed))
             }
             else -> OutlinedButton(
                 onClick = { viewModel.toggleAssignmentCompleted(assignment.id) },
@@ -208,12 +283,12 @@ fun AssignmentDetailDialog(
                     .height(50.dp),
                 shape = RoundedCornerShape(14.dp)
             ) {
-                ButtonContent(isSaving, Icons.Default.Replay, "Marked as complete · Undo")
+                ButtonContent(isSaving, Icons.Default.Replay, stringResource(R.string.course_marked_undo))
             }
         }
 
         Text(
-            text = "Đánh dấu hoàn thành chỉ để theo dõi tiến độ. Hãy nộp bài chính thức trên USTH Moodle.",
+            text = stringResource(R.string.course_mark_note),
             fontSize = 11.sp,
             color = TextSecondary,
             modifier = Modifier.fillMaxWidth()
@@ -224,7 +299,7 @@ fun AssignmentDetailDialog(
         ) {
             Icon(Icons.AutoMirrored.Filled.FormatListBulleted, contentDescription = null, modifier = Modifier.size(16.dp))
             Spacer(modifier = Modifier.width(6.dp))
-            Text(text = "Back to all classwork", fontWeight = FontWeight.SemiBold)
+            Text(text = stringResource(R.string.course_back_to_classwork), fontWeight = FontWeight.SemiBold)
         }
     }
 }
@@ -255,7 +330,7 @@ private fun ImpactRow(label: String, value: @Composable () -> Unit) {
 @Composable
 private fun ButtonContent(isSaving: Boolean, icon: ImageVector, label: String) {
     if (isSaving) {
-        CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = Color.White)
+        CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = OnAccent)
     } else {
         Icon(icon, contentDescription = null, modifier = Modifier.size(17.dp))
     }

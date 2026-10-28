@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- trang môn học -->
+    <string name="course_details_title">Chi tiết môn học</string>
+    <string name="course_info_title">Thông tin môn học</string>
+    <string name="course_tab_stream">Bảng tin</string>
+    <string name="course_tab_classwork">Bài tập</string>
+    <string name="course_tab_grades">Thang điểm</string>
+    <string name="course_metric_todo">cần làm</string>
+    <string name="course_metric_completed">đã xong</string>
+    <plurals name="course_metric_credits">
+        <item quantity="other">tín chỉ</item>
+    </plurals>
+    <plurals name="course_code_credits">
+        <item quantity="other">%1$s · %2$d TÍN CHỈ</item>
+    </plurals>
+    <string name="course_next_steps">Việc tiếp theo</string>
+    <string name="course_view_classwork">Xem bài tập</string>
+    <string name="course_all_caught_up">Bạn đã xong hết bài của môn này.</string>
+    <string name="course_pinned">Đã ghim</string>
+    <string name="course_announcement_badge">THÔNG BÁO CỦA LỚP</string>
+    <string name="course_view_resources">Xem tài liệu môn học</string>
+    <string name="course_ask_in_class">Có thắc mắc? Hỏi thầy cô ở buổi học tới.</string>
+    <string name="course_your_classwork">Bài tập của bạn</string>
+    <string name="course_done_count">Xong %1$d/%2$d</string>
+    <string name="course_expand">Mở rộng</string>
+    <string name="course_collapse">Thu gọn</string>
+    <string name="course_group_other">Khác</string>
+    <string name="course_bonus_max">tối đa +%1$s</string>
+    <string name="course_weight_percent">%1$d%%</string>
+    <string name="course_focus_title">Tập trung vào %1$s.</string>
+    <string name="course_focus_body">Phần này chiếm %1$d%% điểm môn.</string>
+    <string name="course_grade_purpose">Điểm nào cũng có ý nghĩa.</string>
+    <string name="course_grade_current">Điểm tích luỹ hiện tại của bạn là %1$s. Tiếp tục hoàn thành bài để xây dựng kết quả cuối kỳ.</string>
+    <string name="course_grade_none">Chưa có bài nào được chấm. Điểm tích luỹ sẽ hiện ở đây khi bài đầu tiên có điểm.</string>
+    <string name="course_see_overview">Xem tổng quan học tập</string>
+
+    <!-- thẻ thành phần điểm -->
+    <string name="course_weights_title">Điểm được tính thế nào</string>
+    <string name="course_weights_intro">Điểm môn (thang 20) là trung bình có trọng số của các thành phần do giáo viên đặt.</string>
+    <string name="course_weights_intro_bonus">Điểm môn (thang 20) là trung bình có trọng số của các thành phần do giáo viên đặt, cộng thêm bonus tối đa +%1$s.</string>
+    <string name="course_component_with_weight">%1$s · %2$d%%</string>
+    <string name="course_component_in_progress">%1$s / %2$s · đã chấm %3$d%%</string>
+    <string name="course_not_graded">Chưa chấm</string>
+    <string name="course_bonus_status">+%1$s / tối đa +%2$s</string>
+    <string name="course_grade_total">Điểm môn</string>
+    <string name="course_grade_formula">%1$s + %2$s bonus · tối đa %3$s</string>
+
+    <!-- chi tiết bài tập -->
+    <string name="course_assignment_title">Chi tiết bài tập</string>
+    <string name="course_status_done">Đã hoàn thành</string>
+    <string name="course_status_overdue">Quá hạn</string>
+    <string name="course_status_urgent">Hết hạn trong 24 giờ</string>
+    <string name="course_status_upcoming">Sắp tới</string>
+    <string name="course_due_line">%1$s · Hạn nộp %2$s</string>
+    <string name="course_contribution_line">%1$s%% điểm môn</string>
+    <string name="course_your_grade">Điểm của bạn</string>
+    <string name="course_late_penalty">Nộp muộn (−2)</string>
+    <string name="course_waiting_auto_grade">Đã nộp. Máy sẽ tự chấm bài sau khi hết hạn nộp.</string>
+    <string name="course_how_it_counts">Bài này được tính thế nào</string>
+    <string name="course_component">Thành phần</string>
+    <string name="course_of_course">%1$d%% điểm môn</string>
+    <string name="course_this_assignment">Bài này</string>
+    <string name="course_percent_value">%1$s%%</string>
+    <string name="course_of_final_grade">điểm tổng kết môn</string>
+    <string name="course_credits_label">Số tín chỉ</string>
+    <plurals name="course_credits_count">
+        <item quantity="other">%d tín chỉ</item>
+    </plurals>
+    <string name="course_max_points_explain">Đạt %1$s/%1$s ở bài này sẽ đóng góp tối đa %2$s điểm vào điểm môn (thang 20).</string>
+    <string name="course_bonus_explain">Bài bonus: điểm bài bonus được quy đổi thành tối đa +%1$s điểm, cộng thẳng vào điểm môn (không quá %2$s).</string>
+    <string name="course_gpa_note_title">Trọng số môn không phải trọng số GPA.</string>
+    <string name="course_gpa_note_body">Bài này chiếm %1$s%% điểm môn. GPA dùng điểm tổng kết các môn, tính trọng số theo tín chỉ và quy đổi theo quy định của trường.</string>
+    <string name="course_mark_done">Đánh dấu đã xong</string>
+    <string name="course_graded_completed">Đã chấm · hoàn thành</string>
+    <string name="course_marked_undo">Đã đánh dấu xong · Hoàn tác</string>
+    <string name="course_mark_note">Đánh dấu hoàn thành chỉ để theo dõi tiến độ. Hãy nộp bài chính thức trên USTH Moodle.</string>
+    <string name="course_back_to_classwork">Quay lại danh sách bài tập</string>
+
+    <!-- danh sách bài tập -->
+    <string name="course_classwork_title">Bài tập của tôi</string>
+    <string name="course_classwork_subtitle">Mọi môn. Mọi hạn nộp. Một danh sách rõ ràng.</string>
+    <string name="course_search_hint">Tìm bài tập hoặc môn học</string>
+    <string name="course_search_clear">Xoá tìm kiếm</string>
+    <string name="course_filter_todo">Cần làm</string>
+    <string name="course_filter_urgent">Sắp hạn</string>
+    <string name="course_filter_done">Đã xong</string>
+    <string name="course_all_classes">Tất cả môn</string>
+    <string name="course_empty_urgent">Không có gì gấp. Bạn đang đúng tiến độ.</string>
+    <string name="course_empty_done">Thành quả nhỏ tiếp theo bắt đầu từ đây.</string>
+    <string name="course_empty_todo">Đã xong hết!</string>
+    <string name="course_empty_hint">Thử chọn môn hoặc trạng thái khác để xem thêm bài.</string>
+    <string name="course_empty_search">Không có bài nào khớp “%1$s”. Thử từ khoá, môn hoặc trạng thái khác.</string>
+    <string name="course_group_recent">GẦN ĐÂY · 14 NGÀY (%1$d)</string>
+    <string name="course_group_earlier">TRƯỚC ĐÓ (%1$d)</string>
+    <string name="course_due_soon_note">Sắp hạn là còn dưới 24 giờ hoặc đã quá hạn. Thời gian theo giờ trên máy của bạn.</string>
+
+    <!-- thông tin môn học -->
+    <string-array name="course_weekdays_short">
+        <item>CN</item>
+        <item>T2</item>
+        <item>T3</item>
+        <item>T4</item>
+        <item>T5</item>
+        <item>T6</item>
+        <item>T7</item>
+    </string-array>
+    <string name="course_coordinator">Giảng viên phụ trách: %1$s</string>
+    <string name="course_session_lecture">Lý thuyết</string>
+    <string name="course_session_lab">Thực hành</string>
+    <string name="course_view_timetable">Xem thời khóa biểu</string>
+    <string name="course_resources_title">Tài liệu môn học</string>
+    <string name="course_week_label">TUẦN %1$02d</string>
+    <string name="course_resource_slides">Slide</string>
+    <string name="course_resource_notes">Ghi chú</string>
+    <string name="course_resource_exercise">Bài luyện tập</string>
+    <string name="course_resource_dataset">Bộ dữ liệu</string>
+    <string name="course_resources_note">Tài liệu được lưu trên USTH Moodle; nộp bài và tải file chính thức tại cổng Moodle của trường.</string>
+
+    <!-- kế hoạch tuần -->
+    <string name="course_planner_title">Kế hoạch tuần của bạn</string>
+    <string name="course_planner_subtitle">Các hạn nộp sắp tới · theo giờ trên máy của bạn</string>
+    <string name="course_planner_empty">Không còn hạn nộp nào. Tận hưởng chút thảnh thơi nhé.</string>
+    <string name="course_planner_tip">Lên kế hoạch quanh những việc quan trọng. Bắt đầu từ hạn nộp gần nhất.</string>
+
+    <!-- báo cáo điểm và học kỳ -->
+    <string name="course_report_title">Báo cáo điểm</string>
+    <string name="course_report_subtitle">Điểm tích luỹ đến hiện tại, thang 20. Kết quả cuối cùng có thể thay đổi khi các bài còn lại được chấm.</string>
+    <string name="course_report_row">%1$s · %2$s</string>
+    <string name="course_report_row_bonus">%1$s · %2$s · gồm +%3$s bonus</string>
+    <string name="course_report_download">Tải báo cáo điểm (CSV)</string>
+    <string name="course_semester_title">Tổng quan học kỳ</string>
+    <string name="course_semester_subtitle">Học kỳ hiện tại của bạn trong nháy mắt.</string>
+    <string name="course_credits_earned">Tín chỉ đã tích luỹ</string>
+    <plurals name="course_credits_to_milestone">
+        <item quantity="other">Còn %d tín chỉ tới mốc tiếp theo</item>
+    </plurals>
+    <string name="course_milestone_reached">Đã đạt mốc!</string>
+    <string name="course_tasks_completed">Bài đã hoàn thành</string>
+    <plurals name="course_tasks_across">
+        <item quantity="other">Trên %1$d môn · %2$s</item>
+    </plurals>
+    <string name="course_average_grade">Điểm trung bình</string>
+    <string name="course_weighted_by_credits">Có trọng số theo tín chỉ.</string>
+    <string name="course_semester_demo_note">Chế độ xem thử: đánh dấu hoàn thành chỉ lưu tạm trên máy này.</string>
+    <string name="course_semester_note">Đánh dấu hoàn thành được lưu trên máy chủ. Tín chỉ và điểm chỉ thay đổi sau khi có kết quả chính thức.</string>
+    <string name="course_view_report">Xem báo cáo điểm</string>
+
+    <!-- Tracker -->
+    <string name="course_tracker_kicker">BỨC TRANH TOÀN CẢNH</string>
+    <string name="course_tracker_title">Tiến độ của bạn</string>
+    <string name="course_in_progress_badge">ĐANG HỌC</string>
+    <string name="course_semester_tagline">Một học kỳ nhiều cơ hội.</string>
+    <string name="course_credits_earned_lower">tín chỉ đã tích luỹ</string>
+    <string name="course_overall_completion">Hoàn thành chung</string>
+    <string name="course_on_track">Đúng tiến độ</string>
+    <plurals name="course_due_soon_count">
+        <item quantity="other">%d bài sắp hạn</item>
+    </plurals>
+    <string name="course_tasks_summary">%1$d/%2$d bài · %3$s</string>
+    <plurals name="course_courses_count">
+        <item quantity="other">%d môn</item>
+    </plurals>
+    <string name="course_keep_it_up">Cứ thế phát huy!</string>
+    <string name="course_you_got_this">Bạn làm được mà</string>
+    <string name="course_subject_breakdown">Chi tiết từng môn</string>
+    <plurals name="course_tasks_completed_of">
+        <item quantity="other">/ %d bài đã xong</item>
+    </plurals>
+    <string name="course_bonus_included">Đã gồm +%1$s bonus</string>
+    <string name="course_encourage_title">Nhìn xem bạn đã đi xa thế nào.</string>
+    <string name="course_encourage_body">Mỗi bài hoàn thành là một bước tiến.</string>
+</resources>

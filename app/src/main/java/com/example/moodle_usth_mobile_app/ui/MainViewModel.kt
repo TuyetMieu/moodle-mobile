@@ -1,36 +1,50 @@
 package com.example.moodle_usth_mobile_app.ui
 
 import android.app.Application
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.moodle_usth_mobile_app.R
+import com.example.moodle_usth_mobile_app.data.local.AppLanguage
+import com.example.moodle_usth_mobile_app.data.local.AppSettings
 import com.example.moodle_usth_mobile_app.data.local.DownloadSaver
+import com.example.moodle_usth_mobile_app.data.local.LocaleHelper
+import com.example.moodle_usth_mobile_app.data.local.ReminderLead
+import com.example.moodle_usth_mobile_app.data.local.ThemeMode
 import com.example.moodle_usth_mobile_app.data.model.AppData
 import com.example.moodle_usth_mobile_app.data.model.AppNotification
 import com.example.moodle_usth_mobile_app.data.model.Assignment
 import com.example.moodle_usth_mobile_app.data.model.AssignmentStatus
 import com.example.moodle_usth_mobile_app.data.model.ClassSession
 import com.example.moodle_usth_mobile_app.data.model.Course
+import com.example.moodle_usth_mobile_app.data.model.NotificationChannelKind
 import com.example.moodle_usth_mobile_app.data.model.SemesterOverview
-import com.example.moodle_usth_mobile_app.data.model.StudentProfile
+import com.example.moodle_usth_mobile_app.data.model.UserProfile
+import com.example.moodle_usth_mobile_app.data.model.UserRole
 import com.example.moodle_usth_mobile_app.data.remote.ApiException
 import com.example.moodle_usth_mobile_app.data.repository.LearningRules
 import com.example.moodle_usth_mobile_app.data.repository.MoodleRepository
 import com.example.moodle_usth_mobile_app.data.repository.StudySummary
+import com.example.moodle_usth_mobile_app.reminders.NotificationText
+import com.example.moodle_usth_mobile_app.reminders.NotificationTexts
 import com.example.moodle_usth_mobile_app.reminders.ReminderHelper
+import com.example.moodle_usth_mobile_app.reminders.SyncWorker
+import com.example.moodle_usth_mobile_app.reminders.UpdateNotifier
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-/** 5 tab ở thanh dưới cùng. */
+/** 5 tab ở thanh dưới cùng của sinh viên. */
 enum class AppDestination {
     HOME, COURSES, TIMETABLE, TRACKER, PROFILE
 }
 
 /**
- * ViewModel giữ toàn bộ dữ liệu của app.
+ * ViewModel giữ dữ liệu đăng nhập, cài đặt và toàn bộ dữ liệu của sinh viên.
+ * (Dữ liệu của giáo viên nằm ở [TeacherViewModel].)
  *
  * Mỗi biến khai báo bằng `mutableStateOf` là "state": khi giá trị đổi, các màn hình đang đọc
  * biến đó sẽ tự vẽ lại. Màn hình chỉ cần đọc `viewModel.tenBien` là được.
@@ -39,12 +53,31 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     val repository = MoodleRepository(application)
     private val context = application
+    private val settings = AppSettings(application)
+
+    /** Context theo ngôn ngữ app đang dùng — lấy lại mỗi lần vì người dùng có thể đổi ngôn ngữ. */
+    private val res: Context get() = LocaleHelper.localized(context)
 
     // ---------------------------------------------------------- đăng nhập
 
     var isLoggedIn by mutableStateOf(repository.isSignedIn)
+    var role by mutableStateOf(repository.role)
     var isLoggingIn by mutableStateOf(false)
     var loginError by mutableStateOf<String?>(null)
+
+    // ---------------------------------------------------------- cài đặt
+
+    var themeMode by mutableStateOf(settings.themeMode)
+        private set
+    var language by mutableStateOf(settings.language)
+        private set
+    var remindersEnabled by mutableStateOf(ReminderHelper.isEnabled(application))
+    var reminderLeads by mutableStateOf(settings.reminderLeads)
+        private set
+    var notifyProgram by mutableStateOf(settings.notifyProgram)
+        private set
+    var notifyGeneral by mutableStateOf(settings.notifyGeneral)
+        private set
 
     // ---------------------------------------------------------- dữ liệu
 
@@ -65,23 +98,22 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     /**
      * Dialog đang mở: "" = không có. Các tên dùng trong app:
      * "assignment", "classwork", "notifications", "courseInfo", "planner", "gradeReport", "semester".
-     * [dialogArg] là tham số kèm theo (id bài tập, id môn học hoặc bộ lọc "todo"/"urgent"/"done").
+     * [dialogArg] là tham số kèm theo (id bài tập, id môn học, bộ lọc "todo"/"urgent"/"done",
+     * hoặc luồng thông báo "PROGRAM"/"GENERAL").
      */
     var dialogName by mutableStateOf("")
     var dialogArg by mutableStateOf("")
 
     // ---------------------------------------------------------- linh tinh
 
+    /** Thông báo ngắn hiện ở dưới màn hình (snackbar). MainActivity hiện xong sẽ đặt lại null. */
+    var message by mutableStateOf<String?>(null)
+
     /** Bài tập đang chờ server trả lời khi bấm Mark as done / Undo (để khoá nút). */
     var savingAssignmentId by mutableStateOf<String?>(null)
 
     var timetableSelectedDateMs by mutableLongStateOf(System.currentTimeMillis())
     var timetableCalendarView by mutableStateOf("week") // "week" hoặc "month"
-
-    /** Thông báo ngắn hiện ở dưới màn hình (snackbar). MainActivity hiện xong sẽ đặt lại null. */
-    var message by mutableStateOf<String?>(null)
-
-    var remindersEnabled by mutableStateOf(ReminderHelper.isEnabled(application))
 
     /** Giờ hiện tại, cập nhật mỗi 30 giây để các nhãn "còn 2 giờ", "quá hạn" tự đổi. */
     var nowMs by mutableLongStateOf(System.currentTimeMillis())
@@ -103,7 +135,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     val classSessions: List<ClassSession> get() = data?.sessions ?: emptyList()
     val notifications: List<AppNotification> get() = data?.notifications ?: emptyList()
-    val profile: StudentProfile? get() = data?.profile
+    val profile: UserProfile? get() = data?.profile
     val semester: SemesterOverview? get() = data?.semester
     val selectedCourse: Course? get() = courses.find { it.id == selectedCourseId }
 
@@ -115,24 +147,27 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 nowMs = System.currentTimeMillis()
             }
         }
-        if (isLoggedIn) refresh(initial = true)
+        if (isLoggedIn && role == UserRole.STUDENT) {
+            refresh(initial = true)
+            if (!isDemoMode) SyncWorker.schedule(context)
+        }
     }
 
     // ---------------------------------------------------------- đăng nhập / đăng xuất
 
     fun login(baseUrl: String, username: String, password: String) {
         if (username.isBlank() || password.isBlank()) {
-            loginError = "Vui lòng nhập mã sinh viên và mật khẩu"
+            loginError = res.getString(R.string.error_missing_credentials)
             return
         }
         viewModelScope.launch {
             isLoggingIn = true
             loginError = null
             try {
-                repository.login(baseUrl, username, password)
-                onLoggedIn()
+                val newRole = repository.login(baseUrl, username, password)
+                onLoggedIn(newRole)
             } catch (error: Exception) {
-                loginError = errorText(error, baseUrl)
+                loginError = ErrorTexts.of(res, error, baseUrl)
             }
             isLoggingIn = false
         }
@@ -141,19 +176,25 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun startDemo() {
         repository.startDemo()
         loginError = null
-        onLoggedIn()
+        onLoggedIn(UserRole.STUDENT)
     }
 
-    private fun onLoggedIn() {
+    private fun onLoggedIn(newRole: UserRole) {
         currentDestination = AppDestination.HOME
+        role = newRole
         isLoggedIn = true
-        refresh(initial = true)
+        // Giáo viên: TeacherViewModel tự tải dữ liệu khi màn giáo viên hiện ra.
+        if (newRole == UserRole.STUDENT) {
+            refresh(initial = true)
+            if (!isDemoMode) SyncWorker.schedule(context)
+        }
     }
 
     fun logout() {
         viewModelScope.launch {
             repository.logout()
             ReminderHelper.cancelAll(context)
+            SyncWorker.cancel(context)
             data = null
             dialogName = ""
             selectedCourseId = null
@@ -161,8 +202,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             isOffline = false
             loadError = null
             lastSyncedAtMs = null
+            role = UserRole.STUDENT
             isLoggedIn = false
         }
+    }
+
+    /** Phiên đăng nhập hết hạn (401) — dùng chung cho màn sinh viên và giáo viên. */
+    fun onSessionExpired() {
+        repository.session.clear()
+        ReminderHelper.cancelAll(context)
+        SyncWorker.cancel(context)
+        data = null
+        isLoggedIn = false
+        loginError = res.getString(R.string.error_session_expired)
     }
 
     // ---------------------------------------------------------- tải dữ liệu
@@ -184,19 +236,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 nowMs = System.currentTimeMillis()
                 isOffline = result.fromCache
                 lastSyncedAtMs = result.syncedAtMs
+                if (!result.fromCache && !isDemoMode) UpdateNotifier.markSeen(context, result.data)
                 if (result.fromCache && !(quiet && wasOffline)) {
-                    message = "Không kết nối được máy chủ · đang hiển thị dữ liệu đã lưu."
+                    message = res.getString(R.string.error_offline_cache)
                 }
             } catch (error: Exception) {
                 if (error is ApiException && error.status == 401) {
-                    // Token hết hạn → quay về màn đăng nhập.
-                    isLoggedIn = false
-                    loginError = "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
-                    ReminderHelper.cancelAll(context)
+                    onSessionExpired() // token hết hạn → quay về màn đăng nhập
                 } else if (data == null) {
-                    loadError = errorText(error, serverUrl) // chưa có gì để xem → hiện màn lỗi
+                    loadError = ErrorTexts.of(res, error, serverUrl) // chưa có gì để xem → hiện màn lỗi
                 } else if (!quiet) {
-                    message = errorText(error, serverUrl) // đã có dữ liệu → chỉ báo bằng snackbar
+                    message = ErrorTexts.of(res, error, serverUrl) // đã có dữ liệu → chỉ báo bằng snackbar
                 }
             }
             isLoading = false
@@ -207,7 +257,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     /** Gọi từ MainActivity.onResume: cập nhật giờ và tự làm mới nếu dữ liệu đã cũ hơn 5 phút. */
     fun onAppResumed() {
         nowMs = System.currentTimeMillis()
-        if (!isLoggedIn || isDemoMode || data == null) return
+        if (!isLoggedIn || role != UserRole.STUDENT || isDemoMode || data == null) return
         val syncedAt = lastSyncedAtMs ?: 0L
         val fiveMinutes = 5 * 60_000L
         if (isOffline || nowMs - syncedAt > fiveMinutes) refresh(quiet = true)
@@ -238,13 +288,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 val course = findCourse(updated.courseId)
                 if (course != null) {
                     message = if (markDone) {
-                        "${course.shortTitle}: ${course.progress}% complete · ${course.total - course.done} tasks left."
+                        res.getString(R.string.msg_course_progress, course.shortTitle, course.progress, course.total - course.done)
                     } else {
-                        "Đã bỏ đánh dấu “${updated.title}”."
+                        res.getString(R.string.msg_unmarked, updated.title)
                     }
                 }
             } catch (error: Exception) {
-                message = errorText(error, serverUrl)
+                message = ErrorTexts.of(res, error, serverUrl)
             }
             savingAssignmentId = null
         }
@@ -266,32 +316,79 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /** Đánh dấu đã đọc cả một luồng thông báo (null = tất cả). */
+    fun markAllNotificationsRead(channel: NotificationChannelKind?) {
+        val currentData = data ?: return
+        val ids = currentData.notifications.filter { !it.read && (channel == null || it.channel == channel) }.map { it.id }
+        if (ids.isEmpty()) return
+        data = currentData.copy(notifications = currentData.notifications.map { if (it.id in ids) it.copy(read = true) else it })
+        viewModelScope.launch {
+            try {
+                repository.markAllNotificationsRead(channel, ids)
+            } catch (error: Exception) {
+                // Bỏ qua như markNotificationRead.
+            }
+        }
+    }
+
     fun downloadGradeReport() {
         val currentData = data ?: return
         viewModelScope.launch {
             try {
                 val file = repository.downloadGradeReport(currentData)
                 val location = DownloadSaver.save(context, file)
-                message = "Đã tải báo cáo điểm: $location"
+                message = res.getString(R.string.msg_report_downloaded, location)
             } catch (error: Exception) {
-                message = errorText(error, serverUrl)
+                message = ErrorTexts.of(res, error, serverUrl)
             }
         }
     }
 
-    // ---------------------------------------------------------- nhắc hạn nộp
+    // ---------------------------------------------------------- cài đặt
+
+    fun setTheme(mode: ThemeMode) {
+        settings.themeMode = mode
+        themeMode = mode
+    }
+
+    /** Lưu ngôn ngữ. Màn hình gọi xong phải tạo lại Activity (recreate) để áp dụng. */
+    fun setAppLanguage(value: AppLanguage) {
+        settings.language = value
+        language = value
+    }
 
     fun setRemindersOn(enabled: Boolean) {
         ReminderHelper.setEnabled(context, enabled)
         remindersEnabled = enabled
         val count = ReminderHelper.update(context, assignments)
-        message = if (!enabled) {
-            "Đã tắt nhắc hạn nộp."
-        } else if (count == 0) {
-            "Đã bật nhắc hạn nộp · hiện không có bài nào cần nhắc."
-        } else {
-            "Đã bật nhắc hạn nộp · $count lời nhắc (24 giờ và 2 giờ trước hạn)."
+        message = remindersMessage(enabled, count)
+    }
+
+    fun toggleReminderLead(lead: ReminderLead) {
+        val next = if (lead in reminderLeads) reminderLeads - lead else reminderLeads + lead
+        if (next.isEmpty()) {
+            message = res.getString(R.string.reminders_leads_empty)
+            return
         }
+        settings.reminderLeads = next
+        reminderLeads = next
+        ReminderHelper.update(context, assignments)
+    }
+
+    fun changeNotifyProgram(enabled: Boolean) {
+        settings.notifyProgram = enabled
+        notifyProgram = enabled
+    }
+
+    fun changeNotifyGeneral(enabled: Boolean) {
+        settings.notifyGeneral = enabled
+        notifyGeneral = enabled
+    }
+
+    private fun remindersMessage(enabled: Boolean, count: Int): String = when {
+        !enabled -> res.getString(R.string.reminders_off)
+        count == 0 -> res.getString(R.string.reminders_on_none)
+        else -> res.resources.getQuantityString(R.plurals.reminders_on_count, count, count)
     }
 
     fun canPostNotifications(): Boolean = ReminderHelper.canShowNotifications(context)
@@ -326,7 +423,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     /** Mở chi tiết bài tập khi người dùng chạm vào thông báo nhắc hạn nộp. */
     fun openAssignment(assignmentId: String) {
-        if (isLoggedIn) openDialog("assignment", assignmentId)
+        if (isLoggedIn && role == UserRole.STUDENT) openDialog("assignment", assignmentId)
+    }
+
+    /** Mở danh sách thông báo ở đúng luồng khi chạm vào thông báo hệ thống. */
+    fun openNotifications(channel: String) {
+        if (isLoggedIn && role == UserRole.STUDENT) openDialog("notifications", channel)
     }
 
     // ---------------------------------------------------------- hàm tiện ích cho màn hình
@@ -339,19 +441,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun getAssignmentStatus(assignment: Assignment): AssignmentStatus = LearningRules.status(assignment, nowMs)
 
-    fun formatTimeRemaining(assignment: Assignment): String = LearningRules.timeRemaining(assignment, nowMs)
+    fun formatTimeRemaining(assignment: Assignment): String =
+        Formatters.timeLeft(res, LearningRules.timeLeft(assignment.dueAtEpochMs, nowMs))
 
     fun getCourseWithCompletion(course: Course): Course = LearningRules.courseWithProgress(course, assignments)
 
-    /** Đổi lỗi thành câu dễ hiểu cho người dùng. */
-    private fun errorText(error: Exception, baseUrl: String): String {
-        if (error is ApiException) return error.message
-        if (error is java.net.SocketTimeoutException) {
-            return "Máy chủ không phản hồi ($baseUrl). Kiểm tra backend đã chạy và quyền truy cập mạng cục bộ (Cài đặt › Ứng dụng › Quyền)."
-        }
-        if (error is java.net.ConnectException || error is java.net.NoRouteToHostException) {
-            return "Không kết nối được tới $baseUrl. Kiểm tra backend đã chạy và app đã được cấp quyền truy cập mạng cục bộ."
-        }
-        return "Không kết nối được tới $baseUrl. Kiểm tra backend và địa chỉ máy chủ."
-    }
+    /** Bài chưa xong, chưa quá hạn, deadline gần nhất đứng đầu — ưu tiên của sinh viên này. */
+    fun getPriorities(): List<Assignment> = LearningRules.priorities(assignments, nowMs)
+
+    fun getOverdue(): List<Assignment> = LearningRules.overdue(assignments, nowMs)
+
+    fun getNextDeadline(): Assignment? = LearningRules.nextDeadline(assignments, nowMs)
+
+    /** Tiêu đề và nội dung thông báo theo ngôn ngữ đang chọn. */
+    fun notificationText(notification: AppNotification): NotificationText = NotificationTexts.of(res, notification, data)
 }

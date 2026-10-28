@@ -33,15 +33,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.moodle_usth_mobile_app.ui.theme.AccentAmber
-import com.example.moodle_usth_mobile_app.ui.theme.AccentAmberLight
+import androidx.compose.ui.res.stringResource
+import com.example.moodle_usth_mobile_app.R
 import com.example.moodle_usth_mobile_app.ui.theme.AccentBlue
 import com.example.moodle_usth_mobile_app.ui.theme.AccentBlueLight
 import com.example.moodle_usth_mobile_app.ui.theme.AccentCoral
 import com.example.moodle_usth_mobile_app.ui.theme.AccentCoralLight
 import com.example.moodle_usth_mobile_app.ui.theme.AccentGreen
 import com.example.moodle_usth_mobile_app.ui.theme.AccentGreenLight
-import com.example.moodle_usth_mobile_app.ui.theme.CardBorderLight
+import com.example.moodle_usth_mobile_app.ui.theme.CardSurface
 import com.example.moodle_usth_mobile_app.ui.theme.TextPrimary
 import com.example.moodle_usth_mobile_app.ui.theme.TextSecondary
 
@@ -56,7 +56,7 @@ fun StudyOverviewCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = CardSurface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -78,14 +78,14 @@ fun StudyOverviewCard(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
-                        text = "YOUR STUDY SPACE",
+                        text = stringResource(R.string.home_study_space),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextSecondary,
                         letterSpacing = 0.5.sp
                     )
                     Text(
-                        text = "A little focus. A lot of progress.",
+                        text = stringResource(R.string.home_study_space_tagline),
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextPrimary
@@ -101,7 +101,7 @@ fun StudyOverviewCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 StatBox(
-                    label = "To do",
+                    label = stringResource(R.string.home_filter_todo),
                     count = pendingCount,
                     icon = Icons.Default.ListAlt,
                     bgColor = AccentBlueLight,
@@ -110,7 +110,7 @@ fun StudyOverviewCard(
                     modifier = Modifier.weight(1f)
                 )
                 StatBox(
-                    label = "Due soon",
+                    label = stringResource(R.string.home_filter_due_soon),
                     count = urgentCount,
                     icon = Icons.Default.Schedule,
                     bgColor = AccentCoralLight,
@@ -119,7 +119,7 @@ fun StudyOverviewCard(
                     modifier = Modifier.weight(1f)
                 )
                 StatBox(
-                    label = "Recent done",
+                    label = stringResource(R.string.home_filter_recent_done),
                     count = recentDoneCount,
                     icon = Icons.Default.CheckCircle,
                     bgColor = AccentGreenLight,

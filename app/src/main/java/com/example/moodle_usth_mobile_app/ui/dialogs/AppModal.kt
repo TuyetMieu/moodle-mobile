@@ -30,7 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.AnnotatedString
@@ -40,7 +40,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.example.moodle_usth_mobile_app.R
 import com.example.moodle_usth_mobile_app.ui.theme.AccentGreen
+import com.example.moodle_usth_mobile_app.ui.theme.CardSurface
 import com.example.moodle_usth_mobile_app.ui.theme.PrimaryIndigo
 import com.example.moodle_usth_mobile_app.ui.theme.PrimaryIndigoLight
 import com.example.moodle_usth_mobile_app.ui.theme.SurfaceLight
@@ -71,7 +73,7 @@ fun AppModal(
                 .padding(horizontal = 16.dp)
                 .heightIn(max = maxHeight),
             shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = CardSurface),
             elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
         ) {
             Column {
@@ -94,7 +96,7 @@ fun AppModal(
                             .size(36.dp)
                             .background(SurfaceLight, CircleShape)
                     ) {
-                        Icon(Icons.Default.Close, contentDescription = "Đóng", tint = TextSecondary, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Default.Close, contentDescription = stringResource(R.string.common_close), tint = TextSecondary, modifier = Modifier.size(18.dp))
                     }
                 }
                 Column(

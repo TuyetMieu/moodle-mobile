@@ -27,6 +27,20 @@ class SessionStore(context: Context) {
             prefs.edit().putString("token", value).apply()
         }
 
+    /** Vai trò của tài khoản đang đăng nhập: "STUDENT" hoặc "TEACHER". */
+    var role: String
+        get() = prefs.getString("role", null) ?: "STUDENT"
+        set(value) {
+            prefs.edit().putString("role", value).apply()
+        }
+
+    /** Thời điểm của thông báo mới nhất đã báo cho người dùng (để worker không báo lại). */
+    var lastNotifiedAtMs: Long
+        get() = prefs.getLong("last_notified_at", 0L)
+        set(value) {
+            prefs.edit().putLong("last_notified_at", value).apply()
+        }
+
     /** true khi người dùng chọn "Xem thử với dữ liệu mẫu" (không cần server). */
     var demoMode: Boolean
         get() = prefs.getBoolean("demo_mode", false)
@@ -54,8 +68,10 @@ class SessionStore(context: Context) {
     fun clear() {
         prefs.edit()
             .remove("token")
+            .remove("role")
             .remove("demo_mode")
             .remove("last_synced_at")
+            .remove("last_notified_at")
             .apply()
         cacheFile.delete()
     }

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hồ sơ (prof_), thông báo (notif_ui_), thời khoá biểu (tt_), đăng nhập (login_). Mặc định: tiếng Anh. -->
+<resources>
+    <!-- hồ sơ -->
+    <string name="prof_title">Your profile</string>
+    <string name="prof_student_info">Student information</string>
+    <string name="prof_student_id">Student ID</string>
+    <string name="prof_academic_year">Academic year</string>
+    <string name="prof_current_semester">Current semester</string>
+    <string name="prof_academic_progress">My academic progress</string>
+    <string name="prof_synced_title">Synced</string>
+    <string name="prof_synced_body">Data comes from %1$s. The app refreshes when you come back after 5 minutes; pull down to refresh now.</string>
+    <string name="prof_synced_body_at">Data comes from %1$s, synced at %2$s. The app refreshes when you come back after 5 minutes; pull down to refresh now.</string>
+    <string name="prof_demo_title">Demo mode</string>
+    <string name="prof_demo_body">You\'re using sample data bundled with the app. Log out to connect to the backend.</string>
+    <string name="prof_offline_title">Offline</string>
+    <string name="prof_offline_body">Can\'t reach %1$s. You\'re seeing the latest synced data.</string>
+    <string name="prof_offline_body_at">Can\'t reach %1$s. You\'re seeing data synced at %2$s.</string>
+    <string name="prof_logout_confirm_title">Log out?</string>
+    <string name="prof_logout_confirm_body">You\'ll need to log in again to see your work and timetable. Data saved on this device will be deleted.</string>
+    <string name="prof_logout_confirm_demo">Leave demo mode. Temporary completion marks will be cleared.</string>
+
+    <!-- thông báo -->
+    <string name="notif_ui_title">Your notifications</string>
+    <string name="notif_ui_tab_program">Your program</string>
+    <string name="notif_ui_tab_general">Teachers &amp; school</string>
+    <string name="notif_ui_program_hint">Events and news for %1$s students.</string>
+    <string name="notif_ui_program_hint_generic">Events and news for students of your program.</string>
+    <string name="notif_ui_general_hint">Grades, new work, deadline changes, class posts and school-wide notices.</string>
+    <string name="notif_ui_mark_all_read">Mark all read</string>
+    <string name="notif_ui_deadlines">Deadline reminders</string>
+    <string name="notif_ui_all_classwork">All classwork</string>
+    <plurals name="notif_ui_due_soon">
+        <item quantity="one">%d due soon</item>
+        <item quantity="other">%d due soon</item>
+    </plurals>
+    <string name="notif_ui_latest">Latest</string>
+    <string name="notif_ui_empty_program">No news for your program yet.</string>
+    <string name="notif_ui_empty_general">Nothing new from your teachers or the school yet.</string>
+    <string name="notif_ui_unread">Unread</string>
+
+    <!-- thời khoá biểu -->
+    <string name="tt_eyebrow">Plan your studies, your way</string>
+    <string name="tt_title">Timetable</string>
+    <string name="tt_today">Today</string>
+    <string name="tt_this_month">This month</string>
+    <string name="tt_selected_month">Selected month</string>
+    <string name="tt_this_week">This week</string>
+    <string name="tt_selected_week">Selected week</string>
+    <string name="tt_month_tagline">The whole month at a glance.</string>
+    <string name="tt_week_tagline">One week of classes, crystal clear.</string>
+    <plurals name="tt_sessions_unit">
+        <item quantity="one">session</item>
+        <item quantity="other">sessions</item>
+    </plurals>
+    <plurals name="tt_courses_count">
+        <item quantity="one">%d course</item>
+        <item quantity="other">%d courses</item>
+    </plurals>
+    <string name="tt_hours_unit">hours</string>
+    <string name="tt_lecture_and_lab">Lectures &amp; labs</string>
+    <string name="tt_view_week">Week</string>
+    <string name="tt_view_month">Month</string>
+    <string name="tt_prev_month">Previous month</string>
+    <string name="tt_prev_week">Previous week</string>
+    <string name="tt_next_month">Next month</string>
+    <string name="tt_next_week">Next week</string>
+    <string name="tt_has_classes">Has classes</string>
+    <string name="tt_local_time">Times in local time</string>
+    <plurals name="tt_day_summary">
+        <item quantity="one">%1$d session · %2$s h</item>
+        <item quantity="other">%1$d sessions · %2$s h</item>
+    </plurals>
+    <string name="tt_free_today">You\'re free today</string>
+    <string name="tt_no_classes">No classes</string>
+    <string name="tt_see_day">See %1$s</string>
+    <string name="tt_footer">Classes repeat every week during the semester and are synced from the server. Tap a class to open the course and its work.</string>
+    <string name="tt_empty_title">A little time for yourself.</string>
+    <string name="tt_empty_body">No classes on this day. Review, finish an assignment or take a break.</string>
+    <string name="tt_hours_short">%1$s h</string>
+    <string name="tt_kind_lecture">Lecture</string>
+    <string name="tt_kind_lab">Lab</string>
+    <string name="tt_live">In progress</string>
+    <string name="tt_finished">Finished</string>
+    <string name="tt_up_next">Up next</string>
+    <plurals name="tt_credits">
+        <item quantity="one">%d credit</item>
+        <item quantity="other">%d credits</item>
+    </plurals>
+
+    <!-- đăng nhập -->
+    <string name="login_welcome">Welcome back</string>
+    <string name="login_subtitle">Log in with your student or teacher account to see your work, timetable and progress.</string>
+    <string name="login_username">Username (student or staff ID)</string>
+    <string name="login_username_hint">e.g. BA22-041 or gv-minh</string>
+    <string name="login_password">Password</string>
+    <string name="login_hide_password">Hide password</string>
+    <string name="login_show_password">Show password</string>
+    <string name="login_server">Server: %1$s</string>
+    <string name="login_server_address">Backend address</string>
+    <string name="login_submit">Log in</string>
+    <string name="login_demo">Try with sample data</string>
+    <string name="login_demo_accounts">Demo accounts</string>
+    <string name="login_demo_students">Students: %1$s</string>
+    <string name="login_demo_teachers">Teachers: %1$s</string>
+    <string name="login_demo_password">Password: %1$s</string>
+    <string name="login_run_backend">Start the backend: %1$s</string>
+</resources>

@@ -52,13 +52,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.core.content.ContextCompat
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -75,6 +76,8 @@ import com.example.moodle_usth_mobile_app.ui.MainViewModel
 import com.example.moodle_usth_mobile_app.ui.theme.AccentCoral
 import com.example.moodle_usth_mobile_app.ui.theme.AccentCoralLight
 import com.example.moodle_usth_mobile_app.ui.theme.CardBorderLight
+import com.example.moodle_usth_mobile_app.ui.theme.CardSurface
+import com.example.moodle_usth_mobile_app.ui.theme.OnAccent
 import com.example.moodle_usth_mobile_app.ui.theme.PrimaryIndigo
 import com.example.moodle_usth_mobile_app.ui.theme.PrimaryIndigoLight
 import com.example.moodle_usth_mobile_app.ui.theme.SurfaceLight
@@ -134,9 +137,9 @@ fun LoginScreen(viewModel: MainViewModel) {
             letterSpacing = 0.5.sp
         )
         Spacer(modifier = Modifier.height(4.dp))
-        Text(text = "Welcome back", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+        Text(text = stringResource(R.string.login_welcome), fontSize = 26.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
         Text(
-            text = "Đăng nhập bằng tài khoản sinh viên để xem bài tập, lịch học và tiến độ của bạn.",
+            text = stringResource(R.string.login_subtitle),
             fontSize = 13.sp,
             color = TextSecondary,
             textAlign = TextAlign.Center,
@@ -147,8 +150,8 @@ fun LoginScreen(viewModel: MainViewModel) {
         LoginField(
             value = username,
             onValueChange = { username = it },
-            label = "Mã sinh viên",
-            placeholder = "VD: BA22-041",
+            label = stringResource(R.string.login_username),
+            placeholder = stringResource(R.string.login_username_hint),
             icon = Icons.Default.Badge,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Next)
         )
@@ -156,7 +159,7 @@ fun LoginScreen(viewModel: MainViewModel) {
         LoginField(
             value = password,
             onValueChange = { password = it },
-            label = "Mật khẩu",
+            label = stringResource(R.string.login_password),
             icon = Icons.Default.Lock,
             visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
@@ -165,7 +168,7 @@ fun LoginScreen(viewModel: MainViewModel) {
                 IconButton(onClick = { showPassword = !showPassword }) {
                     Icon(
                         if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                        contentDescription = if (showPassword) "Ẩn mật khẩu" else "Hiện mật khẩu",
+                        contentDescription = stringResource(if (showPassword) R.string.login_hide_password else R.string.login_show_password),
                         tint = TextSecondary
                     )
                 }
@@ -177,20 +180,20 @@ fun LoginScreen(viewModel: MainViewModel) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 10.dp)
-                .clickable { showServer = !showServer }
+                .clickable(role = Role.Button) { showServer = !showServer }
                 .padding(vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(Icons.Default.Dns, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(16.dp))
             Spacer(modifier = Modifier.width(6.dp))
-            Text(text = "Máy chủ: $serverUrl", fontSize = 12.sp, color = TextSecondary, modifier = Modifier.weight(1f))
+            Text(text = stringResource(R.string.login_server, serverUrl), fontSize = 12.sp, color = TextSecondary, modifier = Modifier.weight(1f))
             Icon(if (showServer) Icons.Default.ExpandLess else Icons.Default.ExpandMore, contentDescription = null, tint = TextSecondary)
         }
         AnimatedVisibility(visible = showServer) {
             LoginField(
                 value = serverUrl,
                 onValueChange = { serverUrl = it },
-                label = "Địa chỉ backend",
+                label = stringResource(R.string.login_server_address),
                 placeholder = "http://10.0.2.2:8080",
                 icon = Icons.Default.Dns,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Done)
@@ -224,9 +227,9 @@ fun LoginScreen(viewModel: MainViewModel) {
             colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo)
         ) {
             if (viewModel.isLoggingIn) {
-                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = Color.White)
+                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = OnAccent)
             } else {
-                Text(text = "Đăng nhập", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                Text(text = stringResource(R.string.login_submit), fontWeight = FontWeight.Bold, fontSize = 15.sp)
             }
         }
         Spacer(modifier = Modifier.height(10.dp))
@@ -238,7 +241,7 @@ fun LoginScreen(viewModel: MainViewModel) {
                 .height(52.dp),
             shape = RoundedCornerShape(14.dp)
         ) {
-            Text(text = "Xem thử với dữ liệu mẫu", fontWeight = FontWeight.SemiBold)
+            Text(text = stringResource(R.string.login_demo), fontWeight = FontWeight.SemiBold)
         }
 
         Column(
@@ -249,9 +252,19 @@ fun LoginScreen(viewModel: MainViewModel) {
                 .padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Text(text = "Tài khoản demo", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-            Text(text = "BA22-041 / usth2025  ·  BA22-087 / usth2025", fontSize = 12.sp, color = TextSecondary)
-            Text(text = "Chạy backend: cd backend && npm start", fontSize = 11.sp, color = TextSecondary)
+            Text(text = stringResource(R.string.login_demo_accounts), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+            Text(
+                text = stringResource(R.string.login_demo_students, "BA22-041 · BA22-087"),
+                fontSize = 12.sp,
+                color = TextSecondary
+            )
+            Text(
+                text = stringResource(R.string.login_demo_teachers, "gv-minh · gv-linh · gv-quang"),
+                fontSize = 12.sp,
+                color = TextSecondary
+            )
+            Text(text = stringResource(R.string.login_demo_password, "usth2025"), fontSize = 12.sp, color = TextSecondary)
+            Text(text = stringResource(R.string.login_run_backend, "cd backend && npm start"), fontSize = 11.sp, color = TextSecondary)
         }
     }
 }
@@ -285,8 +298,13 @@ private fun LoginField(
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = PrimaryIndigo,
             unfocusedBorderColor = CardBorderLight,
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color.White
+            focusedContainerColor = CardSurface,
+            unfocusedContainerColor = CardSurface,
+            focusedTextColor = TextPrimary,
+            unfocusedTextColor = TextPrimary,
+            focusedLabelColor = PrimaryIndigo,
+            unfocusedLabelColor = TextSecondary,
+            cursorColor = PrimaryIndigo
         ),
         modifier = Modifier.fillMaxWidth()
     )

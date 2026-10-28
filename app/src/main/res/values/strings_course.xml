@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Chuỗi của trang môn học, Tracker, chi tiết bài tập, danh sách bài tập, các dialog thông tin. Tiếng Anh (mặc định). -->
+<resources>
+    <!-- trang môn học -->
+    <string name="course_details_title">Course details</string>
+    <string name="course_info_title">Course information</string>
+    <string name="course_tab_stream">Stream</string>
+    <string name="course_tab_classwork">Classwork</string>
+    <string name="course_tab_grades">Grade weights</string>
+    <string name="course_metric_todo">to do</string>
+    <string name="course_metric_completed">completed</string>
+    <plurals name="course_metric_credits">
+        <item quantity="one">credit</item>
+        <item quantity="other">credits</item>
+    </plurals>
+    <plurals name="course_code_credits">
+        <item quantity="one">%1$s · %2$d CREDIT</item>
+        <item quantity="other">%1$s · %2$d CREDITS</item>
+    </plurals>
+    <string name="course_next_steps">Your next steps</string>
+    <string name="course_view_classwork">View classwork</string>
+    <string name="course_all_caught_up">All caught up in this class.</string>
+    <string name="course_pinned">Pinned</string>
+    <string name="course_announcement_badge">COURSE ANNOUNCEMENT</string>
+    <string name="course_view_resources">View course resources</string>
+    <string name="course_ask_in_class">Questions? Ask in your next class.</string>
+    <string name="course_your_classwork">Your classwork</string>
+    <string name="course_done_count">%1$d/%2$d done</string>
+    <string name="course_expand">Expand</string>
+    <string name="course_collapse">Collapse</string>
+    <string name="course_group_other">Other</string>
+    <string name="course_bonus_max">up to +%1$s</string>
+    <string name="course_weight_percent">%1$d%%</string>
+    <string name="course_focus_title">Focus on %1$s.</string>
+    <string name="course_focus_body">It carries %1$d%% of your course grade.</string>
+    <string name="course_grade_purpose">Every point has a purpose.</string>
+    <string name="course_grade_current">Your current accumulated grade is %1$s. Keep completing assessments to build your final result.</string>
+    <string name="course_grade_none">Nothing has been graded yet. Your accumulated grade appears here once the first assessment is marked.</string>
+    <string name="course_see_overview">See academic overview</string>
+
+    <!-- thẻ thành phần điểm -->
+    <string name="course_weights_title">Know what counts</string>
+    <string name="course_weights_intro">Your course grade (out of 20) is a weighted average of the components your teacher set.</string>
+    <string name="course_weights_intro_bonus">Your course grade (out of 20) is a weighted average of the components your teacher set, plus a bonus of up to +%1$s.</string>
+    <string name="course_component_with_weight">%1$s · %2$d%%</string>
+    <string name="course_component_in_progress">%1$s / %2$s · %3$d%% graded</string>
+    <string name="course_not_graded">Not graded yet</string>
+    <string name="course_bonus_status">+%1$s / up to +%2$s</string>
+    <string name="course_grade_total">Course grade</string>
+    <string name="course_grade_formula">%1$s + %2$s bonus · capped at %3$s</string>
+
+    <!-- chi tiết bài tập -->
+    <string name="course_assignment_title">Assignment details</string>
+    <string name="course_status_done">Completed</string>
+    <string name="course_status_overdue">Overdue</string>
+    <string name="course_status_urgent">Due within 24 hours</string>
+    <string name="course_status_upcoming">Upcoming</string>
+    <string name="course_due_line">%1$s · Due %2$s</string>
+    <string name="course_contribution_line">%1$s%% of course grade</string>
+    <string name="course_your_grade">Your grade</string>
+    <string name="course_late_penalty">Submitted late (−2)</string>
+    <string name="course_waiting_auto_grade">Submitted. The auto-grader marks your work after the deadline.</string>
+    <string name="course_how_it_counts">How this task counts</string>
+    <string name="course_component">Component</string>
+    <string name="course_of_course">%1$d%% of course</string>
+    <string name="course_this_assignment">This assignment</string>
+    <string name="course_percent_value">%1$s%%</string>
+    <string name="course_of_final_grade">of the final course grade</string>
+    <string name="course_credits_label">Course credits</string>
+    <plurals name="course_credits_count">
+        <item quantity="one">%d credit</item>
+        <item quantity="other">%d credits</item>
+    </plurals>
+    <string name="course_max_points_explain">A %1$s/%1$s on this task adds up to %2$s points to your course grade out of 20.</string>
+    <string name="course_bonus_explain">Bonus task: its score is converted into up to +%1$s points, added straight to your course grade (capped at %2$s).</string>
+    <string name="course_gpa_note_title">Course weight is not GPA weight.</string>
+    <string name="course_gpa_note_body">This task contributes %1$s%% to this course. GPA uses final course grades weighted by credits, with the university\'s official grade conversion.</string>
+    <string name="course_mark_done">Mark as done</string>
+    <string name="course_graded_completed">Graded · completed</string>
+    <string name="course_marked_undo">Marked as complete · Undo</string>
+    <string name="course_mark_note">Marking as done only tracks your progress. Submit your work officially on USTH Moodle.</string>
+    <string name="course_back_to_classwork">Back to all classwork</string>
+
+    <!-- danh sách bài tập -->
+    <string name="course_classwork_title">My classwork</string>
+    <string name="course_classwork_subtitle">Every class. Every deadline. One clear list.</string>
+    <string name="course_search_hint">Search assignments or classes</string>
+    <string name="course_search_clear">Clear search</string>
+    <string name="course_filter_todo">To do</string>
+    <string name="course_filter_urgent">Due soon</string>
+    <string name="course_filter_done">Done</string>
+    <string name="course_all_classes">All classes</string>
+    <string name="course_empty_urgent">Nothing urgent. You\'re on track.</string>
+    <string name="course_empty_done">Your next small win starts here.</string>
+    <string name="course_empty_todo">All caught up!</string>
+    <string name="course_empty_hint">Try another class or status to see more assignments.</string>
+    <string name="course_empty_search">No assignments match “%1$s”. Try another keyword, class or status.</string>
+    <string name="course_group_recent">RECENT · 14 DAYS (%1$d)</string>
+    <string name="course_group_earlier">EARLIER (%1$d)</string>
+    <string name="course_due_soon_note">Due soon means within 24 hours, or overdue. Times use your device\'s local time.</string>
+
+    <!-- thông tin môn học -->
+    <string-array name="course_weekdays_short">
+        <item>Sun</item>
+        <item>Mon</item>
+        <item>Tue</item>
+        <item>Wed</item>
+        <item>Thu</item>
+        <item>Fri</item>
+        <item>Sat</item>
+    </string-array>
+    <string name="course_coordinator">Course coordinator: %1$s</string>
+    <string name="course_session_lecture">Lecture</string>
+    <string name="course_session_lab">Lab</string>
+    <string name="course_view_timetable">View timetable</string>
+    <string name="course_resources_title">Course resources</string>
+    <string name="course_week_label">WEEK %1$02d</string>
+    <string name="course_resource_slides">Slides</string>
+    <string name="course_resource_notes">Notes</string>
+    <string name="course_resource_exercise">Exercise</string>
+    <string name="course_resource_dataset">Dataset</string>
+    <string name="course_resources_note">Files are stored on USTH Moodle; submit work and download official files on the university\'s Moodle portal.</string>
+
+    <!-- kế hoạch tuần -->
+    <string name="course_planner_title">Your weekly planner</string>
+    <string name="course_planner_subtitle">Upcoming deadlines · shown in your local time</string>
+    <string name="course_planner_empty">No deadlines ahead. Enjoy the breathing room.</string>
+    <string name="course_planner_tip">Plan around the things that count. Start with the nearest deadline.</string>
+
+    <!-- báo cáo điểm và học kỳ -->
+    <string name="course_report_title">Your grade report</string>
+    <string name="course_report_subtitle">Your accumulated grades so far, out of 20. Final results may change as remaining assessments are graded.</string>
+    <string name="course_report_row">%1$s · %2$s</string>
+    <string name="course_report_row_bonus">%1$s · %2$s · incl. +%3$s bonus</string>
+    <string name="course_report_download">Download grade report (CSV)</string>
+    <string name="course_semester_title">Semester overview</string>
+    <string name="course_semester_subtitle">Your current semester at a glance.</string>
+    <string name="course_credits_earned">Credits earned</string>
+    <plurals name="course_credits_to_milestone">
+        <item quantity="one">%d credit to your next milestone</item>
+        <item quantity="other">%d credits to your next milestone</item>
+    </plurals>
+    <string name="course_milestone_reached">Milestone reached!</string>
+    <string name="course_tasks_completed">Tasks completed</string>
+    <plurals name="course_tasks_across">
+        <item quantity="one">Across your %1$d course · %2$s</item>
+        <item quantity="other">Across your %1$d courses · %2$s</item>
+    </plurals>
+    <string name="course_average_grade">Average grade</string>
+    <string name="course_weighted_by_credits">Weighted by credits.</string>
+    <string name="course_semester_demo_note">Demo mode: marking as done is only saved temporarily on this device.</string>
+    <string name="course_semester_note">Completion marks are saved on the server. Credits and grades only change once official results are in.</string>
+    <string name="course_view_report">View grade report</string>
+
+    <!-- Tracker -->
+    <string name="course_tracker_kicker">THE BIGGER PICTURE</string>
+    <string name="course_tracker_title">Your progress</string>
+    <string name="course_in_progress_badge">IN PROGRESS</string>
+    <string name="course_semester_tagline">A semester of possibilities.</string>
+    <string name="course_credits_earned_lower">credits earned</string>
+    <string name="course_overall_completion">Overall completion</string>
+    <string name="course_on_track">On track</string>
+    <plurals name="course_due_soon_count">
+        <item quantity="one">%d due soon</item>
+        <item quantity="other">%d due soon</item>
+    </plurals>
+    <string name="course_tasks_summary">%1$d of %2$d tasks · %3$s</string>
+    <plurals name="course_courses_count">
+        <item quantity="one">%d course</item>
+        <item quantity="other">%d courses</item>
+    </plurals>
+    <string name="course_keep_it_up">Keep it up!</string>
+    <string name="course_you_got_this">You\'ve got this</string>
+    <string name="course_subject_breakdown">Subject breakdown</string>
+    <plurals name="course_tasks_completed_of">
+        <item quantity="one">/ %d task completed</item>
+        <item quantity="other">/ %d tasks completed</item>
+    </plurals>
+    <string name="course_bonus_included">Includes +%1$s bonus</string>
+    <string name="course_encourage_title">Look how far you\'ve come.</string>
+    <string name="course_encourage_body">Every completed task is a step forward.</string>
+</resources>

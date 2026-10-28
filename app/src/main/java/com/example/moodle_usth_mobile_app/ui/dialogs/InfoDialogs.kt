@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Dataset
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.EditNote
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Slideshow
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material3.Button
@@ -28,20 +29,27 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.moodle_usth_mobile_app.R
+import com.example.moodle_usth_mobile_app.data.model.MAX_SCORE
 import com.example.moodle_usth_mobile_app.data.model.ResourceKind
+import com.example.moodle_usth_mobile_app.data.model.SessionKind
+import com.example.moodle_usth_mobile_app.data.model.formatGrade
+import com.example.moodle_usth_mobile_app.data.model.formatScore
 import com.example.moodle_usth_mobile_app.data.repository.LearningRules
 import com.example.moodle_usth_mobile_app.ui.AppDestination
 import com.example.moodle_usth_mobile_app.ui.MainViewModel
@@ -55,16 +63,16 @@ import com.example.moodle_usth_mobile_app.ui.theme.SurfaceLight
 import com.example.moodle_usth_mobile_app.ui.theme.TextPrimary
 import com.example.moodle_usth_mobile_app.ui.theme.TextSecondary
 
-private val WEEKDAY_LABELS = listOf("CN", "T2", "T3", "T4", "T5", "T6", "T7")
-
 /** Overlay "Course information": ảnh, giảng viên, lịch học của môn. */
 @Composable
 fun CourseInfoDialog(courseId: String, viewModel: MainViewModel, onDismiss: () -> Unit) {
     val courses = viewModel.courses
     val sessions = viewModel.classSessions
     val course = courses.firstOrNull { it.id == courseId } ?: return
+    // Tên thứ viết tắt, index 0 = Chủ nhật (giống ClassSession.weekday).
+    val weekdays = stringArrayResource(R.array.course_weekdays_short)
 
-    AppModal(title = "Course information", onDismiss = onDismiss) {
+    AppModal(title = stringResource(R.string.course_info_title), onDismiss = onDismiss) {
         Image(
             painter = painterResource(courseImageRes(course.imageResName)),
             contentDescription = null,
@@ -74,10 +82,10 @@ fun CourseInfoDialog(courseId: String, viewModel: MainViewModel, onDismiss: () -
                 .height(140.dp)
                 .clip(RoundedCornerShape(16.dp))
         )
-        BadgeItem(text = "${course.code} · ${course.credits} CREDITS", tone = course.tone)
+        BadgeItem(text = pluralStringResource(R.plurals.course_code_credits, course.credits, course.code, course.credits), tone = course.tone)
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(text = course.title, fontSize = 19.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-            Text(text = "Course coordinator: ${course.teacher}", fontSize = 13.sp, color = TextSecondary)
+            Text(text = stringResource(R.string.course_coordinator, course.teacher), fontSize = 13.sp, color = TextSecondary)
         }
         if (course.summary.isNotBlank()) {
             Text(text = course.summary, fontSize = 13.sp, color = TextPrimary, lineHeight = 19.sp)
@@ -96,12 +104,15 @@ fun CourseInfoDialog(courseId: String, viewModel: MainViewModel, onDismiss: () -
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
                         Text(
-                            text = "${WEEKDAY_LABELS[session.weekday]} · ${session.start}–${session.end}",
+                            text = "${weekdays.getOrElse(session.weekday) { "" }} · ${session.start}–${session.end}",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextPrimary
                         )
-                        Text(text = "${session.kind} · ${session.room}", fontSize = 11.sp, color = TextSecondary)
+                        val kind = stringResource(
+                            if (session.kind == SessionKind.LAB) R.string.course_session_lab else R.string.course_session_lecture
+                        )
+                        Text(text = "$kind · ${session.room}", fontSize = 11.sp, color = TextSecondary)
                     }
                 }
             }
@@ -109,16 +120,16 @@ fun CourseInfoDialog(courseId: String, viewModel: MainViewModel, onDismiss: () -
                 viewModel.closeDialog()
                 viewModel.navigateTo(AppDestination.TIMETABLE)
             }) {
-                Text(text = "Xem thời khóa biểu", fontWeight = FontWeight.SemiBold)
+                Text(text = stringResource(R.string.course_view_timetable), fontWeight = FontWeight.SemiBold)
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(15.dp))
             }
         }
         if (course.resources.isNotEmpty()) {
-            Text(text = "Course resources", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+            Text(text = stringResource(R.string.course_resources_title), fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
             course.resources.groupBy { it.week }.forEach { (week, items) ->
                 Text(
-                    text = "WEEK ${String.format("%02d", week)}",
+                    text = stringResource(R.string.course_week_label, week),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextSecondary,
@@ -137,7 +148,7 @@ fun CourseInfoDialog(courseId: String, viewModel: MainViewModel, onDismiss: () -
                         Column(modifier = Modifier.weight(1f)) {
                             Text(text = resource.title, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
                             Text(
-                                text = "${resource.kind.label} · ${resource.fileType} · ${resource.sizeLabel}",
+                                text = "${stringResource(resourceLabel(resource.kind))} · ${resource.fileType} · ${resource.sizeLabel}",
                                 fontSize = 11.sp,
                                 color = TextSecondary
                             )
@@ -146,7 +157,7 @@ fun CourseInfoDialog(courseId: String, viewModel: MainViewModel, onDismiss: () -
                 }
             }
         }
-        ModalSubtitle("Tài liệu được lưu trên USTH Moodle; nộp bài và tải file chính thức tại cổng Moodle của trường.")
+        ModalSubtitle(stringResource(R.string.course_resources_note))
     }
 }
 
@@ -157,15 +168,22 @@ private fun resourceIcon(kind: ResourceKind): ImageVector = when (kind) {
     ResourceKind.DATASET -> Icons.Default.Dataset
 }
 
+private fun resourceLabel(kind: ResourceKind): Int = when (kind) {
+    ResourceKind.SLIDES -> R.string.course_resource_slides
+    ResourceKind.NOTES -> R.string.course_resource_notes
+    ResourceKind.EXERCISE -> R.string.course_resource_exercise
+    ResourceKind.DATASET -> R.string.course_resource_dataset
+}
+
 /** Overlay "Your weekly planner": các deadline chưa xong, sắp theo hạn nộp. */
 @Composable
 fun PlannerDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
     val assignments = viewModel.assignments
     val pending = LearningRules.pending(assignments)
 
-    AppModal(title = "Your weekly planner", onDismiss = onDismiss) {
-        ModalSubtitle("Upcoming deadlines · shown in your local time")
-        if (pending.isEmpty()) EmptyState(title = "No deadlines ahead. Enjoy the breathing room.")
+    AppModal(title = stringResource(R.string.course_planner_title), onDismiss = onDismiss) {
+        ModalSubtitle(stringResource(R.string.course_planner_subtitle))
+        if (pending.isEmpty()) EmptyState(title = stringResource(R.string.course_planner_empty))
         pending.forEach { assignment ->
             AssignmentRow(
                 assignment = assignment,
@@ -176,7 +194,7 @@ fun PlannerDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
             )
         }
         InlineInfo(
-            text = "Plan around the things that count. Start with the highest-impact assignment.",
+            text = stringResource(R.string.course_planner_tip),
             icon = Icons.Default.CalendarMonth
         )
     }
@@ -187,17 +205,26 @@ fun PlannerDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
 fun GradeReportDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
     val courses = viewModel.courses
     val semester = viewModel.semester
+    val maxText = "/${formatScore(MAX_SCORE)}"
 
-    AppModal(title = "Your grade report", onDismiss = onDismiss) {
+    AppModal(title = stringResource(R.string.course_report_title), onDismiss = onDismiss) {
         BadgeItem(text = if (semester != null) "${semester.label} · ${semester.academicYear}".uppercase() else "", tone = "sky")
-        ModalSubtitle("Your accumulated grades so far. Final results may change as remaining assessments are graded.")
+        ModalSubtitle(stringResource(R.string.course_report_subtitle))
         courses.forEach { course ->
+            val credits = pluralStringResource(R.plurals.course_credits_count, course.credits, course.credits)
+            // Môn có bonus: ghi rõ phần bonus đã cộng vào điểm.
+            val bonus = course.bonus
+            val subtitle = if (course.bonusEnabled && bonus != null && bonus > 0) {
+                stringResource(R.string.course_report_row_bonus, credits, course.code, formatScore(bonus))
+            } else {
+                stringResource(R.string.course_report_row, credits, course.code)
+            }
             ReportRow(
                 leading = { SubjectIcon(icon = courseIcon(course.id), tone = course.tone) },
                 title = course.shortTitle,
-                subtitle = "${course.credits} credits · ${course.code}",
+                subtitle = subtitle,
                 value = course.gradeText,
-                unit = "/10"
+                unit = maxText
             )
         }
         Button(
@@ -210,7 +237,7 @@ fun GradeReportDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
         ) {
             Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(17.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "Download grade report (CSV)", fontWeight = FontWeight.Bold)
+            Text(text = stringResource(R.string.course_report_download), fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -222,27 +249,39 @@ fun SemesterOverviewDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
     val courses = viewModel.courses
     val summary = viewModel.getStudySummary()
     val current = semester ?: return
+    val left = (current.creditsMilestone - current.creditsEarned).coerceAtLeast(0)
 
-    AppModal(title = "Semester overview", onDismiss = onDismiss) {
+    AppModal(title = stringResource(R.string.course_semester_title), onDismiss = onDismiss) {
         BadgeItem(text = "${current.label} · ${current.academicYear}".uppercase(), tone = "sky")
-        ModalSubtitle("Your current semester at a glance.")
+        ModalSubtitle(stringResource(R.string.course_semester_subtitle))
         ReportRow(
             leading = { LeadingIcon(Icons.Default.School) },
-            title = "Credits earned",
-            subtitle = "${(current.creditsMilestone - current.creditsEarned).coerceAtLeast(0)} credits to your next milestone",
+            title = stringResource(R.string.course_credits_earned),
+            subtitle = if (left > 0) pluralStringResource(R.plurals.course_credits_to_milestone, left, left)
+            else stringResource(R.string.course_milestone_reached),
             value = "${current.creditsEarned}",
             unit = "/${current.creditsMilestone}"
         )
         ReportRow(
             leading = { LeadingIcon(Icons.Default.CheckCircle) },
-            title = "Tasks completed",
-            subtitle = "Across your ${courses.size} courses · ${current.enrolledCredits} credits",
+            title = stringResource(R.string.course_tasks_completed),
+            subtitle = pluralStringResource(
+                R.plurals.course_tasks_across, courses.size, courses.size,
+                pluralStringResource(R.plurals.course_credits_count, current.enrolledCredits, current.enrolledCredits)
+            ),
             value = "${summary.totalDone}",
             unit = "/${summary.totalAssignments}"
         )
+        val average = current.averageGrade
+        ReportRow(
+            leading = { LeadingIcon(Icons.Default.EmojiEvents) },
+            title = stringResource(R.string.course_average_grade),
+            subtitle = stringResource(R.string.course_weighted_by_credits),
+            value = if (average != null) formatGrade(average) else "—",
+            unit = "/${formatScore(MAX_SCORE)}"
+        )
         InlineInfo(
-            if (viewModel.isDemoMode) "Chế độ xem thử: đánh dấu hoàn thành chỉ lưu tạm trên máy này."
-            else "Đánh dấu hoàn thành được lưu trên máy chủ. Tín chỉ và điểm chỉ thay đổi sau khi có kết quả chính thức."
+            stringResource(if (viewModel.isDemoMode) R.string.course_semester_demo_note else R.string.course_semester_note)
         )
         Button(
             onClick = { viewModel.openDialog("gradeReport") },
@@ -252,7 +291,7 @@ fun SemesterOverviewDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
             shape = RoundedCornerShape(14.dp),
             colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo)
         ) {
-            Text(text = "View grade report", fontWeight = FontWeight.Bold)
+            Text(text = stringResource(R.string.course_view_report), fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.width(8.dp))
             Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(16.dp))
         }

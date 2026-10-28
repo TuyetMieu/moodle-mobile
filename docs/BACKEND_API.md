@@ -3,6 +3,10 @@
 Backend nằm trong `backend/`: Node.js ≥ 22.13, chỉ dùng module có sẵn (`node:http`, `node:sqlite`, `node:crypto`), **không cần `npm install`**.
 Tài liệu này giải thích từng file và liệt kê **toàn bộ endpoint** kèm request/response. Cách chạy xem `backend/README.md`, schema bảng xem `CHUC_NANG_VA_CSDL.md`.
 
+> **Lưu ý (v2):** tài liệu này mô tả phiên bản đầu (thang 10, thành phần điểm cố định, chỉ có sinh viên).
+> Từ v2: thang 20, thành phần điểm do giáo viên đặt, bonus, máy chấm, vai trò giáo viên và thông báo 2 luồng —
+> xem `docs/NANG_CAP_V2.md` và bảng endpoint trong `backend/README.md` (nguồn cập nhật nhất).
+
 ---
 
 ## 1. Cấu trúc & luồng một request

@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,7 +39,9 @@ fun courseImageRes(imageName: String): Int = when (imageName) {
     else -> R.drawable.development
 }
 
-/** Màu chính của một "tone" trong thiết kế (blue/green/purple/amber/coral). */
+/** Màu chính của một "tone" trong thiết kế (blue/green/purple/amber/coral). Đổi theo chế độ sáng/tối. */
+@Composable
+@ReadOnlyComposable
 fun toneColor(tone: String): Color = when (tone) {
     "green" -> AccentGreen
     "purple" -> AccentPurple
@@ -48,6 +51,9 @@ fun toneColor(tone: String): Color = when (tone) {
     else -> PrimaryIndigo
 }
 
+/** Nền nhạt của một tone (ở chế độ tối là nền tối pha màu). */
+@Composable
+@ReadOnlyComposable
 fun toneLightColor(tone: String): Color = when (tone) {
     "green" -> AccentGreenLight
     "purple" -> AccentPurpleLight
@@ -55,6 +61,16 @@ fun toneLightColor(tone: String): Color = when (tone) {
     "coral" -> AccentCoralLight
     "sky" -> AccentBlueLight
     else -> PrimaryIndigoLight
+}
+
+/**
+ * Tone ổn định cho một thành phần điểm (cùng id luôn cùng màu). Bài bonus → green.
+ * Dùng chung cho danh sách bài tập, chi tiết bài và bảng thang điểm.
+ */
+fun componentTone(componentId: String?): String {
+    if (componentId == null) return "green"
+    val tones = listOf("blue", "amber", "purple", "sky", "coral")
+    return tones[Math.floorMod(componentId.hashCode(), tones.size)]
 }
 
 fun courseIcon(courseId: String): ImageVector = when (courseId) {

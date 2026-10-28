@@ -41,10 +41,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -52,26 +56,45 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.moodle_usth_mobile_app.R
 import com.example.moodle_usth_mobile_app.data.model.ClassSession
 import com.example.moodle_usth_mobile_app.data.model.Course
+import com.example.moodle_usth_mobile_app.data.model.SessionKind
 import com.example.moodle_usth_mobile_app.ui.MainViewModel
 import com.example.moodle_usth_mobile_app.ui.components.BadgeItem
 import com.example.moodle_usth_mobile_app.ui.components.toneColor
 import com.example.moodle_usth_mobile_app.ui.components.toneLightColor
 import com.example.moodle_usth_mobile_app.ui.theme.AccentGreen
+import com.example.moodle_usth_mobile_app.ui.theme.AccentGreenLight
+import com.example.moodle_usth_mobile_app.ui.theme.CardBorderLight
+import com.example.moodle_usth_mobile_app.ui.theme.CardSurface
+import com.example.moodle_usth_mobile_app.ui.theme.OnAccent
 import com.example.moodle_usth_mobile_app.ui.theme.PrimaryIndigo
 import com.example.moodle_usth_mobile_app.ui.theme.PrimaryIndigoLight
 import com.example.moodle_usth_mobile_app.ui.theme.SurfaceLight
 import com.example.moodle_usth_mobile_app.ui.theme.TextPrimary
 import com.example.moodle_usth_mobile_app.ui.theme.TextSecondary
+import android.text.format.DateFormat
+import java.text.DateFormatSymbols
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-private val VI = Locale("vi", "VN")
-private val WEEKDAY_LABELS = listOf("CN", "T2", "T3", "T4", "T5", "T6", "T7")
 private val MONDAY_FIRST = listOf(1, 2, 3, 4, 5, 6, 0)
+
+/** Tên thứ viết tắt theo ngôn ngữ đang dùng; chỉ số 0 = Chủ nhật … 6 = Thứ bảy (giống API). */
+private fun weekdayLabels(locale: Locale): List<String> {
+    val names = DateFormatSymbols.getInstance(locale).shortWeekdays // [1] = Chủ nhật … [7] = Thứ bảy
+    return (1..7).map { names[it] }
+}
+
+/** Mẫu ngày giờ phù hợp với ngôn ngữ (VD "MMMMyyyy" → "October 2026" / "tháng 10, 2026"). */
+private fun localizedFormat(skeleton: String, locale: Locale): SimpleDateFormat =
+    SimpleDateFormat(DateFormat.getBestDateTimePattern(locale, skeleton), locale)
+
+private fun capitalized(text: String, locale: Locale): String =
+    text.replaceFirstChar { if (it.isLowerCase()) it.titlecase(locale) else it.toString() }
 
 /** Các phép tính ngày cho thời khóa biểu (tuần bắt đầu từ thứ Hai, theo giờ của điện thoại). */
 private object Dates {
@@ -181,7 +204,7 @@ private fun totalHoursOf(sessions: List<ClassSession>): Double {
 }
 
 private fun formatHours(hours: Double): String =
-    if (hours % 1.0 == 0.0) hours.toInt().toString() else String.format(VI, "%.1f", hours)
+    if (hours % 1.0 == 0.0) hours.toInt().toString() else String.format(Locale.getDefault(), "%.1f", hours)
 
 @Composable
 fun TimetableScreen(
@@ -221,9 +244,12 @@ fun TimetableScreen(
     val isToday = Dates.sameDay(selectedDateMs, nowMs)
     val nextSession = daySessions.firstOrNull { Dates.at(selectedDateMs, it.end) > nowMs }
 
-    val shortDate = SimpleDateFormat("dd/MM", VI)
-    val fullDate = SimpleDateFormat("EEEE, d 'tháng' M", VI)
-    val monthLabel = SimpleDateFormat("'Tháng' M, yyyy", VI)
+    // Đọc locale qua LocalConfiguration để màn hình vẽ lại khi đổi ngôn ngữ.
+    val locale = LocalConfiguration.current.locales[0]
+    val shortDate = localizedFormat("ddMM", locale)
+    val fullDate = localizedFormat("EEEEdMMMM", locale)
+    val monthLabel = localizedFormat("MMMMyyyy", locale)
+    val weekdayNames = weekdayLabels(locale)
 
     Column(
         modifier = modifier
@@ -238,21 +264,21 @@ fun TimetableScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = "SẮP XẾP VIỆC HỌC, THEO CÁCH CỦA BẠN", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TextSecondary, letterSpacing = 0.5.sp)
-                Text(text = "Thời khóa biểu", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                Text(text = stringResource(R.string.tt_eyebrow).uppercase(locale), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TextSecondary, letterSpacing = 0.5.sp)
+                Text(text = stringResource(R.string.tt_title), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
             }
             Row(
                 modifier = Modifier
                     .clip(RoundedCornerShape(20.dp))
-                    .background(if (isToday) Color(0xFFF1F5F9) else Color.White)
-                    .clickable(enabled = !isToday) { viewModel.timetableSelectedDateMs = nowMs }
+                    .background(if (isToday) CardBorderLight else CardSurface)
+                    .clickable(enabled = !isToday, role = Role.Button) { viewModel.timetableSelectedDateMs = nowMs }
                     .padding(horizontal = 14.dp, vertical = 9.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 val tint = if (isToday) TextSecondary else PrimaryIndigo
                 Icon(Icons.Default.CalendarMonth, contentDescription = null, tint = tint, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(6.dp))
-                Text(text = "Hôm nay", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = tint)
+                Text(text = stringResource(R.string.tt_today), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = tint)
             }
         }
 
@@ -267,18 +293,18 @@ fun TimetableScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = CardSurface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         BadgeItem(
                             text = when {
-                                isMonth && isCurrentPeriod -> "THÁNG NÀY"
-                                isMonth -> "THÁNG ĐÃ CHỌN"
-                                isCurrentPeriod -> "TUẦN NÀY"
-                                else -> "TUẦN ĐÃ CHỌN"
-                            },
+                                isMonth && isCurrentPeriod -> stringResource(R.string.tt_this_month)
+                                isMonth -> stringResource(R.string.tt_selected_month)
+                                isCurrentPeriod -> stringResource(R.string.tt_this_week)
+                                else -> stringResource(R.string.tt_selected_week)
+                            }.uppercase(locale),
                             tone = "sky"
                         )
                         Spacer(modifier = Modifier.weight(1f))
@@ -289,14 +315,22 @@ fun TimetableScreen(
                         )
                     }
                     Text(
-                        text = if (isMonth) "Lịch cả tháng, chủ động hơn." else "Một tuần học, thật rõ ràng.",
+                        text = stringResource(if (isMonth) R.string.tt_month_tagline else R.string.tt_week_tagline),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextPrimary
                     )
                     Row(modifier = Modifier.fillMaxWidth()) {
-                        OverviewStat(Modifier.weight(1f), "${periodSessions.size}", "buổi học", Icons.Default.Book, "${courses.size} môn học")
-                        OverviewStat(Modifier.weight(1f), formatHours(totalHours), "giờ học", Icons.Default.Schedule, "Lý thuyết & thực hành")
+                        OverviewStat(
+                            Modifier.weight(1f), "${periodSessions.size}",
+                            pluralStringResource(R.plurals.tt_sessions_unit, periodSessions.size),
+                            Icons.Default.Book,
+                            pluralStringResource(R.plurals.tt_courses_count, courses.size, courses.size)
+                        )
+                        OverviewStat(
+                            Modifier.weight(1f), formatHours(totalHours), stringResource(R.string.tt_hours_unit),
+                            Icons.Default.Schedule, stringResource(R.string.tt_lecture_and_lab)
+                        )
                     }
                 }
             }
@@ -305,24 +339,24 @@ fun TimetableScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = CardSurface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color(0xFFF1F5F9), RoundedCornerShape(10.dp))
+                            .background(SurfaceLight, RoundedCornerShape(10.dp))
                             .padding(3.dp)
                     ) {
-                        listOf("week" to "Tuần", "month" to "Tháng").forEach { (id, label) ->
+                        listOf("week" to stringResource(R.string.tt_view_week), "month" to stringResource(R.string.tt_view_month)).forEach { (id, label) ->
                             val selected = calendarView == id
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(if (selected) Color.White else Color.Transparent)
-                                    .clickable { viewModel.timetableCalendarView = id }
+                                    .background(if (selected) CardSurface else Color.Transparent)
+                                    .clickable(role = Role.Tab) { viewModel.timetableCalendarView = id }
                                     .padding(vertical = 7.dp),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -338,7 +372,7 @@ fun TimetableScreen(
 
                     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = monthLabel.format(Date(selectedDateMs)),
+                            text = capitalized(monthLabel.format(Date(selectedDateMs)), locale),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextPrimary,
@@ -347,12 +381,12 @@ fun TimetableScreen(
                         IconButton(onClick = {
                             viewModel.timetableSelectedDateMs = if (isMonth) Dates.shiftMonths(selectedDateMs, -1) else Dates.shiftDays(selectedDateMs, -7)
                         }) {
-                            Icon(Icons.Default.ChevronLeft, contentDescription = if (isMonth) "Tháng trước" else "Tuần trước", tint = TextPrimary)
+                            Icon(Icons.Default.ChevronLeft, contentDescription = stringResource(if (isMonth) R.string.tt_prev_month else R.string.tt_prev_week), tint = TextPrimary)
                         }
                         IconButton(onClick = {
                             viewModel.timetableSelectedDateMs = if (isMonth) Dates.shiftMonths(selectedDateMs, 1) else Dates.shiftDays(selectedDateMs, 7)
                         }) {
-                            Icon(Icons.Default.ChevronRight, contentDescription = if (isMonth) "Tháng sau" else "Tuần sau", tint = TextPrimary)
+                            Icon(Icons.Default.ChevronRight, contentDescription = stringResource(if (isMonth) R.string.tt_next_month else R.string.tt_next_week), tint = TextPrimary)
                         }
                     }
 
@@ -360,7 +394,7 @@ fun TimetableScreen(
                         Row(modifier = Modifier.fillMaxWidth()) {
                             MONDAY_FIRST.forEach { weekday ->
                                 Text(
-                                    text = WEEKDAY_LABELS[weekday],
+                                    text = weekdayNames[weekday],
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = TextSecondary,
@@ -401,7 +435,7 @@ fun TimetableScreen(
                             days.forEach { day ->
                                 WeekDayCell(
                                     modifier = Modifier.weight(1f),
-                                    label = WEEKDAY_LABELS[Dates.weekday(day)],
+                                    label = weekdayNames[Dates.weekday(day)],
                                     day = Dates.dayOfMonth(day),
                                     selected = Dates.sameDay(day, selectedDateMs),
                                     today = Dates.sameDay(day, nowMs),
@@ -413,8 +447,8 @@ fun TimetableScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(modifier = Modifier.size(6.dp).background(PrimaryIndigo, CircleShape))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = "Có lịch học", fontSize = 11.sp, color = TextSecondary, modifier = Modifier.weight(1f))
-                            Text(text = "Giờ học theo giờ địa phương", fontSize = 11.sp, color = TextSecondary)
+                            Text(text = stringResource(R.string.tt_has_classes), fontSize = 11.sp, color = TextSecondary, modifier = Modifier.weight(1f))
+                            Text(text = stringResource(R.string.tt_local_time), fontSize = 11.sp, color = TextSecondary)
                         }
                     }
                 }
@@ -425,7 +459,7 @@ fun TimetableScreen(
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = if (isToday) "HÔM NAY" else fullDate.format(Date(selectedDateMs)).uppercase(VI),
+                            text = (if (isToday) stringResource(R.string.tt_today) else fullDate.format(Date(selectedDateMs))).uppercase(locale),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextSecondary,
@@ -433,9 +467,11 @@ fun TimetableScreen(
                         )
                         Text(
                             text = when {
-                                daySessions.isNotEmpty() -> "${daySessions.size} buổi học · ${formatHours(dayHours)} giờ"
-                                isToday -> "Hôm nay bạn được nghỉ"
-                                else -> "Không có lịch học"
+                                daySessions.isNotEmpty() -> pluralStringResource(
+                                    R.plurals.tt_day_summary, daySessions.size, daySessions.size, formatHours(dayHours)
+                                )
+                                isToday -> stringResource(R.string.tt_free_today)
+                                else -> stringResource(R.string.tt_no_classes)
                             },
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
@@ -456,7 +492,7 @@ fun TimetableScreen(
                         }
                     }
                     EmptyDayCard(
-                        nextDayLabel = if (nextDay != null) "Xem lịch ${fullDate.format(Date(nextDay))}" else null,
+                        nextDayLabel = if (nextDay != null) stringResource(R.string.tt_see_day, fullDate.format(Date(nextDay))) else null,
                         onNextDay = { if (nextDay != null) viewModel.timetableSelectedDateMs = nextDay }
                     )
                 } else {
@@ -481,7 +517,7 @@ fun TimetableScreen(
                 Icon(Icons.Default.Info, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(15.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Lịch học lặp lại hằng tuần trong học kỳ, đồng bộ từ máy chủ. Chạm vào một buổi học để mở lớp và bài tập.",
+                    text = stringResource(R.string.tt_footer),
                     fontSize = 11.sp,
                     color = TextSecondary,
                     lineHeight = 15.sp
@@ -528,13 +564,13 @@ private fun WeekDayCell(
             .clip(RoundedCornerShape(14.dp))
             .background(if (selected) PrimaryIndigo else Color.Transparent)
             .then(if (today && !selected) Modifier.border(1.5.dp, PrimaryIndigo, RoundedCornerShape(14.dp)) else Modifier)
-            .clickable(onClick = onClick)
+            .clickable(role = Role.Button, onClick = onClick)
             .padding(vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = label, fontSize = 11.sp, fontWeight = FontWeight.Medium, color = if (selected) Color.White.copy(alpha = 0.85f) else TextSecondary)
+        Text(text = label, fontSize = 11.sp, fontWeight = FontWeight.Medium, color = if (selected) OnAccent.copy(alpha = 0.85f) else TextSecondary)
         Spacer(modifier = Modifier.height(4.dp))
-        Text(text = "$day", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = if (selected) Color.White else TextPrimary)
+        Text(text = "$day", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = if (selected) OnAccent else TextPrimary)
         Spacer(modifier = Modifier.height(4.dp))
         Box(
             modifier = Modifier
@@ -542,7 +578,7 @@ private fun WeekDayCell(
                 .background(
                     when {
                         !hasClasses -> Color.Transparent
-                        selected -> Color.White
+                        selected -> OnAccent
                         else -> PrimaryIndigo
                     },
                     CircleShape
@@ -568,16 +604,16 @@ private fun MonthDayCell(
             .clip(RoundedCornerShape(10.dp))
             .background(if (selected) PrimaryIndigo else Color.Transparent)
             .then(if (today && !selected) Modifier.border(1.5.dp, PrimaryIndigo, RoundedCornerShape(10.dp)) else Modifier)
-            .clickable(onClick = onClick)
+            .clickable(role = Role.Button, onClick = onClick)
             .alpha(if (outside) 0.35f else 1f),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "$day", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = if (selected) Color.White else TextPrimary)
+        Text(text = "$day", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = if (selected) OnAccent else TextPrimary)
         Spacer(modifier = Modifier.height(3.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.height(5.dp)) {
             tones.take(3).forEach { tone ->
-                Box(modifier = Modifier.size(5.dp).background(if (selected) Color.White else toneColor(tone), CircleShape))
+                Box(modifier = Modifier.size(5.dp).background(if (selected) OnAccent else toneColor(tone), CircleShape))
             }
         }
     }
@@ -588,7 +624,7 @@ private fun EmptyDayCard(nextDayLabel: String?, onNextDay: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = CardSurface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
@@ -606,9 +642,9 @@ private fun EmptyDayCard(nextDayLabel: String?, onNextDay: () -> Unit) {
             ) {
                 Icon(Icons.Default.CalendarMonth, contentDescription = null, tint = PrimaryIndigo, modifier = Modifier.size(28.dp))
             }
-            Text(text = "Một chút thời gian cho chính mình.", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+            Text(text = stringResource(R.string.tt_empty_title), fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextPrimary, textAlign = TextAlign.Center)
             Text(
-                text = "Không có lịch học vào ngày này. Bạn có thể ôn bài, hoàn thành bài tập hoặc nghỉ ngơi.",
+                text = stringResource(R.string.tt_empty_body),
                 fontSize = 12.sp,
                 color = TextSecondary,
                 lineHeight = 17.sp,
@@ -618,7 +654,7 @@ private fun EmptyDayCard(nextDayLabel: String?, onNextDay: () -> Unit) {
                 Row(
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
-                        .clickable(onClick = onNextDay)
+                        .clickable(role = Role.Button, onClick = onNextDay)
                         .padding(horizontal = 10.dp, vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -653,36 +689,39 @@ private fun SessionCard(
             Spacer(modifier = Modifier.height(6.dp))
             Box(modifier = Modifier.width(2.dp).height(18.dp).background(toneLightColor(course.tone)))
             Spacer(modifier = Modifier.height(6.dp))
-            Text(text = "${formatHours(sessionHours(session))} giờ", fontSize = 10.sp, color = TextSecondary)
+            Text(text = stringResource(R.string.tt_hours_short, formatHours(sessionHours(session))), fontSize = 10.sp, color = TextSecondary)
         }
         Spacer(modifier = Modifier.width(8.dp))
         Card(
             modifier = Modifier
                 .weight(1f)
-                .clickable(onClick = onClick),
+                .clickable(role = Role.Button, onClick = onClick),
             shape = RoundedCornerShape(18.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = CardSurface),
             elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
         ) {
             Row(modifier = Modifier.height(IntrinsicSize.Min)) {
                 Box(modifier = Modifier.width(4.dp).fillMaxHeight().background(toneColor(course.tone)))
                 Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        BadgeItem(text = session.kind, tone = course.tone)
+                        BadgeItem(
+                            text = stringResource(if (session.kind == SessionKind.LAB) R.string.tt_kind_lab else R.string.tt_kind_lecture),
+                            tone = course.tone
+                        )
                         Spacer(modifier = Modifier.weight(1f))
                         when {
                             live -> Row(
                                 modifier = Modifier
-                                    .background(Color(0xFFECFDF5), RoundedCornerShape(12.dp))
+                                    .background(AccentGreenLight, RoundedCornerShape(12.dp))
                                     .padding(horizontal = 8.dp, vertical = 4.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Box(modifier = Modifier.size(6.dp).background(AccentGreen, CircleShape))
                                 Spacer(modifier = Modifier.width(5.dp))
-                                Text(text = "Đang diễn ra", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = AccentGreen)
+                                Text(text = stringResource(R.string.tt_live), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = AccentGreen)
                             }
-                            finished -> Text(text = "Đã kết thúc", fontSize = 11.sp, color = TextSecondary)
-                            upNext -> BadgeItem(text = "Sắp tới", tone = "sky")
+                            finished -> Text(text = stringResource(R.string.tt_finished), fontSize = 11.sp, color = TextSecondary)
+                            upNext -> BadgeItem(text = stringResource(R.string.tt_up_next), tone = "sky")
                             else -> Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(15.dp))
                         }
                     }
@@ -691,7 +730,7 @@ private fun SessionCard(
                         Text(text = "${course.code} · ", fontSize = 12.sp, color = TextSecondary)
                         Icon(Icons.Default.School, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(13.dp))
                         Spacer(modifier = Modifier.width(3.dp))
-                        Text(text = "${course.credits} tín chỉ", fontSize = 12.sp, color = TextSecondary)
+                        Text(text = pluralStringResource(R.plurals.tt_credits, course.credits, course.credits), fontSize = 12.sp, color = TextSecondary)
                     }
                     Spacer(modifier = Modifier.height(2.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {

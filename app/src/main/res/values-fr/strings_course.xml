@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- trang môn học -->
+    <string name="course_details_title">Détails du cours</string>
+    <string name="course_info_title">Informations du cours</string>
+    <string name="course_tab_stream">Fil</string>
+    <string name="course_tab_classwork">Devoirs</string>
+    <string name="course_tab_grades">Barème</string>
+    <string name="course_metric_todo">à faire</string>
+    <string name="course_metric_completed">terminés</string>
+    <plurals name="course_metric_credits" tools:ignore="ImpliedQuantity">
+        <item quantity="one">crédit</item>
+        <item quantity="many">crédits</item>
+        <item quantity="other">crédits</item>
+    </plurals>
+    <plurals name="course_code_credits">
+        <item quantity="one">%1$s · %2$d CRÉDIT</item>
+        <item quantity="many">%1$s · %2$d CRÉDITS</item>
+        <item quantity="other">%1$s · %2$d CRÉDITS</item>
+    </plurals>
+    <string name="course_next_steps">Vos prochaines étapes</string>
+    <string name="course_view_classwork">Voir les devoirs</string>
+    <string name="course_all_caught_up">Vous êtes à jour dans ce cours.</string>
+    <string name="course_pinned">Épinglé</string>
+    <string name="course_announcement_badge">ANNONCE DU COURS</string>
+    <string name="course_view_resources">Voir les ressources du cours</string>
+    <string name="course_ask_in_class">Des questions ? Posez-les au prochain cours.</string>
+    <string name="course_your_classwork">Vos devoirs</string>
+    <string name="course_done_count">%1$d/%2$d terminés</string>
+    <string name="course_expand">Développer</string>
+    <string name="course_collapse">Réduire</string>
+    <string name="course_group_other">Autres</string>
+    <string name="course_bonus_max">jusqu\'à +%1$s</string>
+    <string name="course_weight_percent">%1$d %%</string>
+    <string name="course_focus_title">Concentrez-vous sur %1$s.</string>
+    <string name="course_focus_body">Cela représente %1$d %% de votre note du cours.</string>
+    <string name="course_grade_purpose">Chaque point compte.</string>
+    <string name="course_grade_current">Votre note cumulée actuelle est de %1$s. Continuez à rendre vos travaux pour construire votre résultat final.</string>
+    <string name="course_grade_none">Rien n\'a encore été noté. Votre note cumulée apparaîtra ici dès la première évaluation notée.</string>
+    <string name="course_see_overview">Voir le bilan académique</string>
+
+    <!-- thẻ thành phần điểm -->
+    <string name="course_weights_title">Ce qui compte</string>
+    <string name="course_weights_intro">La note du cours (sur 20) est une moyenne pondérée des composantes définies par votre enseignant.</string>
+    <string name="course_weights_intro_bonus">La note du cours (sur 20) est une moyenne pondérée des composantes définies par votre enseignant, plus un bonus jusqu\'à +%1$s.</string>
+    <string name="course_component_with_weight">%1$s · %2$d %%</string>
+    <string name="course_component_in_progress">%1$s / %2$s · %3$d %% noté</string>
+    <string name="course_not_graded">Pas encore noté</string>
+    <string name="course_bonus_status">+%1$s / jusqu\'à +%2$s</string>
+    <string name="course_grade_total">Note du cours</string>
+    <string name="course_grade_formula">%1$s + %2$s de bonus · plafonné à %3$s</string>
+
+    <!-- chi tiết bài tập -->
+    <string name="course_assignment_title">Détails du devoir</string>
+    <string name="course_status_done">Terminé</string>
+    <string name="course_status_overdue">En retard</string>
+    <string name="course_status_urgent">À rendre sous 24 heures</string>
+    <string name="course_status_upcoming">À venir</string>
+    <string name="course_due_line">%1$s · À rendre le %2$s</string>
+    <string name="course_contribution_line">%1$s %% de la note du cours</string>
+    <string name="course_your_grade">Votre note</string>
+    <string name="course_late_penalty">Rendu en retard (−2)</string>
+    <string name="course_waiting_auto_grade">Rendu. La correction automatique notera votre travail après l\'échéance.</string>
+    <string name="course_how_it_counts">Comment ce devoir compte</string>
+    <string name="course_component">Composante</string>
+    <string name="course_of_course">%1$d %% du cours</string>
+    <string name="course_this_assignment">Ce devoir</string>
+    <string name="course_percent_value">%1$s %%</string>
+    <string name="course_of_final_grade">de la note finale du cours</string>
+    <string name="course_credits_label">Crédits du cours</string>
+    <plurals name="course_credits_count">
+        <item quantity="one">%d crédit</item>
+        <item quantity="many">%d crédits</item>
+        <item quantity="other">%d crédits</item>
+    </plurals>
+    <string name="course_max_points_explain">Un %1$s/%1$s à ce devoir rapporte jusqu\'à %2$s points à votre note du cours sur 20.</string>
+    <string name="course_bonus_explain">Devoir bonus : sa note est convertie en jusqu\'à +%1$s points, ajoutés directement à votre note du cours (plafonnée à %2$s).</string>
+    <string name="course_gpa_note_title">Le poids dans le cours n\'est pas le poids dans la moyenne générale.</string>
+    <string name="course_gpa_note_body">Ce devoir compte pour %1$s %% de ce cours. La moyenne générale utilise les notes finales des cours pondérées par les crédits, selon la conversion officielle de l\'université.</string>
+    <string name="course_mark_done">Marquer comme terminé</string>
+    <string name="course_graded_completed">Noté · terminé</string>
+    <string name="course_marked_undo">Marqué comme terminé · Annuler</string>
+    <string name="course_mark_note">Marquer comme terminé sert seulement à suivre vos progrès. Rendez officiellement votre travail sur USTH Moodle.</string>
+    <string name="course_back_to_classwork">Retour à tous les devoirs</string>
+
+    <!-- danh sách bài tập -->
+    <string name="course_classwork_title">Mes devoirs</string>
+    <string name="course_classwork_subtitle">Chaque cours. Chaque échéance. Une seule liste claire.</string>
+    <string name="course_search_hint">Rechercher un devoir ou un cours</string>
+    <string name="course_search_clear">Effacer la recherche</string>
+    <string name="course_filter_todo">À faire</string>
+    <string name="course_filter_urgent">Bientôt dus</string>
+    <string name="course_filter_done">Terminés</string>
+    <string name="course_all_classes">Tous les cours</string>
+    <string name="course_empty_urgent">Rien d\'urgent. Vous êtes dans les temps.</string>
+    <string name="course_empty_done">Votre prochaine petite victoire commence ici.</string>
+    <string name="course_empty_todo">Tout est à jour !</string>
+    <string name="course_empty_hint">Essayez un autre cours ou un autre statut pour voir plus de devoirs.</string>
+    <string name="course_empty_search">Aucun devoir ne correspond à « %1$s ». Essayez un autre mot-clé, cours ou statut.</string>
+    <string name="course_group_recent">RÉCENTS · 14 JOURS (%1$d)</string>
+    <string name="course_group_earlier">PLUS ANCIENS (%1$d)</string>
+    <string name="course_due_soon_note">« Bientôt dus » signifie dans les 24 heures ou en retard. Les heures suivent l\'heure locale de votre appareil.</string>
+
+    <!-- thông tin môn học -->
+    <string-array name="course_weekdays_short">
+        <item>Dim</item>
+        <item>Lun</item>
+        <item>Mar</item>
+        <item>Mer</item>
+        <item>Jeu</item>
+        <item>Ven</item>
+        <item>Sam</item>
+    </string-array>
+    <string name="course_coordinator">Responsable du cours : %1$s</string>
+    <string name="course_session_lecture">Cours magistral</string>
+    <string name="course_session_lab">TP</string>
+    <string name="course_view_timetable">Voir l\'emploi du temps</string>
+    <string name="course_resources_title">Ressources du cours</string>
+    <string name="course_week_label">SEMAINE %1$02d</string>
+    <string name="course_resource_slides">Diapositives</string>
+    <string name="course_resource_notes">Notes</string>
+    <string name="course_resource_exercise">Exercice</string>
+    <string name="course_resource_dataset">Jeu de données</string>
+    <string name="course_resources_note">Les fichiers sont stockés sur USTH Moodle ; rendez vos travaux et téléchargez les fichiers officiels sur le portail Moodle de l\'université.</string>
+
+    <!-- kế hoạch tuần -->
+    <string name="course_planner_title">Votre planning de la semaine</string>
+    <string name="course_planner_subtitle">Échéances à venir · heure locale</string>
+    <string name="course_planner_empty">Aucune échéance à venir. Profitez-en pour souffler.</string>
+    <string name="course_planner_tip">Organisez-vous autour de ce qui compte. Commencez par l\'échéance la plus proche.</string>
+
+    <!-- báo cáo điểm và học kỳ -->
+    <string name="course_report_title">Votre relevé de notes</string>
+    <string name="course_report_subtitle">Vos notes cumulées à ce jour, sur 20. Les résultats finaux peuvent changer à mesure que les évaluations restantes sont notées.</string>
+    <string name="course_report_row">%1$s · %2$s</string>
+    <string name="course_report_row_bonus">%1$s · %2$s · dont +%3$s de bonus</string>
+    <string name="course_report_download">Télécharger le relevé (CSV)</string>
+    <string name="course_semester_title">Bilan du semestre</string>
+    <string name="course_semester_subtitle">Votre semestre en un coup d\'œil.</string>
+    <string name="course_credits_earned">Crédits obtenus</string>
+    <plurals name="course_credits_to_milestone">
+        <item quantity="one">Plus que %d crédit avant le prochain palier</item>
+        <item quantity="many">Plus que %d crédits avant le prochain palier</item>
+        <item quantity="other">Plus que %d crédits avant le prochain palier</item>
+    </plurals>
+    <string name="course_milestone_reached">Palier atteint !</string>
+    <string name="course_tasks_completed">Devoirs terminés</string>
+    <plurals name="course_tasks_across">
+        <item quantity="one">Sur votre %1$d cours · %2$s</item>
+        <item quantity="many">Sur vos %1$d cours · %2$s</item>
+        <item quantity="other">Sur vos %1$d cours · %2$s</item>
+    </plurals>
+    <string name="course_average_grade">Moyenne</string>
+    <string name="course_weighted_by_credits">Pondérée par les crédits.</string>
+    <string name="course_semester_demo_note">Mode démo : les devoirs marqués comme terminés ne sont enregistrés que temporairement sur cet appareil.</string>
+    <string name="course_semester_note">Les devoirs marqués comme terminés sont enregistrés sur le serveur. Les crédits et les notes ne changent qu\'avec les résultats officiels.</string>
+    <string name="course_view_report">Voir le relevé de notes</string>
+
+    <!-- Tracker -->
+    <string name="course_tracker_kicker">VUE D\'ENSEMBLE</string>
+    <string name="course_tracker_title">Vos progrès</string>
+    <string name="course_in_progress_badge">EN COURS</string>
+    <string name="course_semester_tagline">Un semestre plein de possibilités.</string>
+    <string name="course_credits_earned_lower">crédits obtenus</string>
+    <string name="course_overall_completion">Avancement global</string>
+    <string name="course_on_track">Dans les temps</string>
+    <plurals name="course_due_soon_count">
+        <item quantity="one">%d bientôt dû</item>
+        <item quantity="many">%d bientôt dus</item>
+        <item quantity="other">%d bientôt dus</item>
+    </plurals>
+    <string name="course_tasks_summary">%1$d sur %2$d devoirs · %3$s</string>
+    <plurals name="course_courses_count">
+        <item quantity="one">%d cours</item>
+        <item quantity="many">%d cours</item>
+        <item quantity="other">%d cours</item>
+    </plurals>
+    <string name="course_keep_it_up">Continuez comme ça !</string>
+    <string name="course_you_got_this">Vous allez y arriver</string>
+    <string name="course_subject_breakdown">Détail par matière</string>
+    <plurals name="course_tasks_completed_of">
+        <item quantity="one">/ %d devoir terminé</item>
+        <item quantity="many">/ %d devoirs terminés</item>
+        <item quantity="other">/ %d devoirs terminés</item>
+    </plurals>
+    <string name="course_bonus_included">Dont +%1$s de bonus</string>
+    <string name="course_encourage_title">Regardez le chemin parcouru.</string>
+    <string name="course_encourage_body">Chaque devoir terminé est un pas en avant.</string>
+</resources>

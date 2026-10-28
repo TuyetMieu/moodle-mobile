@@ -30,21 +30,31 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.moodle_usth_mobile_app.R
 import com.example.moodle_usth_mobile_app.data.model.Assignment
 import com.example.moodle_usth_mobile_app.data.model.AssignmentStatus
 import com.example.moodle_usth_mobile_app.data.repository.LearningRules
 import com.example.moodle_usth_mobile_app.ui.MainViewModel
 import com.example.moodle_usth_mobile_app.ui.components.AssignmentRow
 import com.example.moodle_usth_mobile_app.ui.theme.CardBorderLight
+import com.example.moodle_usth_mobile_app.ui.theme.CardSurface
+import com.example.moodle_usth_mobile_app.ui.theme.OnAccent
 import com.example.moodle_usth_mobile_app.ui.theme.PrimaryIndigo
+import com.example.moodle_usth_mobile_app.ui.theme.SurfaceLight
 import com.example.moodle_usth_mobile_app.ui.theme.TextPrimary
 import com.example.moodle_usth_mobile_app.ui.theme.TextSecondary
 
-private val FILTERS = listOf("todo" to "To do", "urgent" to "Due soon", "done" to "Done")
+/** Tab trạng thái: id → tên hiển thị. */
+private val FILTERS = listOf(
+    "todo" to R.string.course_filter_todo,
+    "urgent" to R.string.course_filter_urgent,
+    "done" to R.string.course_filter_done
+)
 private const val RECENT_WINDOW_MS = 14 * 24 * 3_600_000L
 
 /**
@@ -96,20 +106,20 @@ fun ClassworkListDialog(
         filtered.sortedBy { it.dueAtEpochMs }
     }
 
-    AppModal(title = "My classwork", onDismiss = onDismiss) {
-        ModalSubtitle("Every class. Every deadline. One clear list.")
+    AppModal(title = stringResource(R.string.course_classwork_title), onDismiss = onDismiss) {
+        ModalSubtitle(stringResource(R.string.course_classwork_subtitle))
 
         // Search
         OutlinedTextField(
             value = query,
             onValueChange = { query = it },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Search assignments or classes", fontSize = 13.sp) },
+            placeholder = { Text(stringResource(R.string.course_search_hint), fontSize = 13.sp) },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = TextSecondary) },
             trailingIcon = {
                 if (query.isNotEmpty()) {
                     IconButton(onClick = { query = "" }) {
-                        Icon(Icons.Default.Close, contentDescription = "Xoá tìm kiếm", tint = TextSecondary)
+                        Icon(Icons.Default.Close, contentDescription = stringResource(R.string.course_search_clear), tint = TextSecondary)
                     }
                 }
             },
@@ -126,7 +136,7 @@ fun ClassworkListDialog(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFFF1F5F9), RoundedCornerShape(12.dp))
+                .background(SurfaceLight, RoundedCornerShape(12.dp))
                 .padding(3.dp)
         ) {
             FILTERS.forEach { (id, label) ->
@@ -135,15 +145,16 @@ fun ClassworkListDialog(
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(if (selected) Color.White else Color.Transparent)
+                        .background(if (selected) CardSurface else Color.Transparent)
                         .clickable { activeFilter = id }
                         .padding(vertical = 8.dp),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = label,
+                        text = stringResource(label),
                         fontSize = 12.sp,
+                        maxLines = 1,
                         fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
                         color = if (selected) TextPrimary else TextSecondary
                     )
@@ -163,7 +174,7 @@ fun ClassworkListDialog(
             modifier = Modifier.horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            CourseChip("All classes", selectedCourseId == "all") { selectedCourseId = "all" }
+            CourseChip(stringResource(R.string.course_all_classes), selectedCourseId == "all") { selectedCourseId = "all" }
             courses.forEach { course ->
                 CourseChip(course.shortTitle, selectedCourseId == course.id) { selectedCourseId = course.id }
             }
@@ -171,24 +182,26 @@ fun ClassworkListDialog(
 
         if (visible.isEmpty()) {
             EmptyState(
-                title = when (activeFilter) {
-                    "urgent" -> "Nothing urgent. You're on track."
-                    "done" -> "Your next small win starts here."
-                    else -> "All caught up!"
-                },
-                subtitle = if (query.isBlank()) "Try another class or status to see more assignments."
-                else "No assignments match “${query.trim()}”. Try another keyword, class or status."
+                title = stringResource(
+                    when (activeFilter) {
+                        "urgent" -> R.string.course_empty_urgent
+                        "done" -> R.string.course_empty_done
+                        else -> R.string.course_empty_todo
+                    }
+                ),
+                subtitle = if (query.isBlank()) stringResource(R.string.course_empty_hint)
+                else stringResource(R.string.course_empty_search, query.trim())
             )
         } else if (activeFilter == "done") {
             // Khớp với ô "Recent done" ở Home: tách bài xong trong 14 ngày gần đây và bài cũ hơn.
             val recent = visible.filter { viewModel.nowMs - (it.completedAtEpochMs ?: 0L) <= RECENT_WINDOW_MS }
             val earlier = visible.filter { viewModel.nowMs - (it.completedAtEpochMs ?: 0L) > RECENT_WINDOW_MS }
             if (recent.isNotEmpty()) {
-                GroupTitle("GẦN ĐÂY · 14 NGÀY (${recent.size})")
+                GroupTitle(stringResource(R.string.course_group_recent, recent.size))
                 recent.forEach { assignment -> ClassworkRow(assignment, viewModel) }
             }
             if (earlier.isNotEmpty()) {
-                GroupTitle("TRƯỚC ĐÓ (${earlier.size})")
+                GroupTitle(stringResource(R.string.course_group_earlier, earlier.size))
                 earlier.forEach { assignment -> ClassworkRow(assignment, viewModel) }
             }
         } else {
@@ -196,7 +209,7 @@ fun ClassworkListDialog(
         }
 
         Text(
-            text = "Due soon means within 24 hours, or overdue. Times use your device's local time.",
+            text = stringResource(R.string.course_due_soon_note),
             fontSize = 11.sp,
             color = TextSecondary
         )
@@ -226,7 +239,7 @@ private fun CourseChip(label: String, selected: Boolean, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(10.dp))
-            .background(if (selected) PrimaryIndigo else Color(0xFFF1F5F9))
+            .background(if (selected) PrimaryIndigo else SurfaceLight)
             .clickable { onClick() }
             .padding(horizontal = 12.dp, vertical = 7.dp)
     ) {
@@ -234,7 +247,7 @@ private fun CourseChip(label: String, selected: Boolean, onClick: () -> Unit) {
             text = label,
             fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold,
-            color = if (selected) Color.White else TextSecondary
+            color = if (selected) OnAccent else TextSecondary
         )
     }
 }

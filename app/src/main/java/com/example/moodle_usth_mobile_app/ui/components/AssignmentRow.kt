@@ -28,7 +28,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
@@ -36,10 +35,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moodle_usth_mobile_app.data.model.Assignment
-import com.example.moodle_usth_mobile_app.data.model.formatGrade
+import com.example.moodle_usth_mobile_app.data.model.formatScore
+import com.example.moodle_usth_mobile_app.R
+import androidx.compose.ui.res.stringResource
 import com.example.moodle_usth_mobile_app.ui.Formatters
 import com.example.moodle_usth_mobile_app.data.model.AssignmentStatus
 import com.example.moodle_usth_mobile_app.ui.theme.AccentCoral
+import com.example.moodle_usth_mobile_app.ui.theme.AccentCoralLight
+import com.example.moodle_usth_mobile_app.ui.theme.CardSurface
+import com.example.moodle_usth_mobile_app.ui.theme.PrimaryIndigoLight
+import com.example.moodle_usth_mobile_app.ui.theme.SurfaceLight
 import com.example.moodle_usth_mobile_app.ui.theme.AccentGreen
 import com.example.moodle_usth_mobile_app.ui.theme.AccentGreenLight
 import com.example.moodle_usth_mobile_app.ui.theme.CardBorderLight
@@ -66,7 +71,7 @@ fun AssignmentRow(
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isDone) Color(0xFFF8FAFC) else Color.White
+            containerColor = if (isDone) SurfaceLight else CardSurface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = if (isDone) 0.dp else 1.dp),
         border = if (isDone) BorderStroke(1.dp, CardBorderLight) else null
@@ -84,8 +89,8 @@ fun AssignmentRow(
                     .clip(CircleShape)
                     .background(
                         if (isDone) AccentGreenLight
-                        else if (isUrgent) Color(0xFFFEE2E2)
-                        else Color(0xFFEEF2FF)
+                        else if (isUrgent) AccentCoralLight
+                        else PrimaryIndigoLight
                     ),
                 contentAlignment = Alignment.Center
             ) {
@@ -121,7 +126,7 @@ fun AssignmentRow(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (isDone) {
                         Text(
-                            text = "Completed · Nice work!",
+                            text = stringResource(R.string.home_row_completed_nice),
                             fontSize = 11.sp,
                             color = AccentGreen,
                             fontWeight = FontWeight.Medium
@@ -151,18 +156,28 @@ fun AssignmentRow(
                 if (!compact) {
                     Spacer(modifier = Modifier.height(6.dp))
 
-                    // Category & contribution badges
+                    // Thành phần điểm & % đóng góp vào điểm môn (hoặc nhãn bonus)
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        BadgeItem(
-                            text = if (isDone) "Completed" else "${assignment.category.label} · ${assignment.category.weight}%",
-                            tone = if (isDone) "green" else assignment.category.tone
-                        )
-
-                        if (!isDone) {
+                        if (isDone) {
+                            BadgeItem(text = stringResource(R.string.home_row_completed), tone = "green")
+                            if (assignment.late) BadgeItem(text = stringResource(R.string.common_late), tone = "coral")
+                            if (assignment.isAutoGraded) BadgeItem(text = stringResource(R.string.common_auto_graded), tone = "sky")
+                        } else if (assignment.isBonus) {
                             BadgeItem(
-                                text = "${assignment.contribution}% this task",
-                                tone = "sky"
+                                text = stringResource(R.string.common_bonus_up_to, formatScore(assignment.bonusMax ?: 0.0)),
+                                tone = componentTone(null)
                             )
+                        } else {
+                            BadgeItem(
+                                text = stringResource(
+                                    R.string.home_row_component, assignment.componentName.orEmpty(), assignment.componentWeight ?: 0
+                                ),
+                                tone = componentTone(assignment.componentId)
+                            )
+                            val contribution = assignment.contribution
+                            if (contribution != null) {
+                                BadgeItem(text = stringResource(R.string.home_row_contribution, formatScore(contribution)), tone = "sky")
+                            }
                         }
                     }
                 }
@@ -174,9 +189,9 @@ fun AssignmentRow(
             if (isDone && score != null) {
                 Text(
                     text = buildAnnotatedString {
-                        append(formatGrade(score))
+                        append(formatScore(score))
                         withStyle(SpanStyle(fontSize = 11.sp, color = TextSecondary, fontWeight = FontWeight.Medium)) {
-                            append("/${assignment.maxScore.toInt()}")
+                            append("/" + formatScore(assignment.maxScore))
                         }
                     },
                     fontSize = 15.sp,

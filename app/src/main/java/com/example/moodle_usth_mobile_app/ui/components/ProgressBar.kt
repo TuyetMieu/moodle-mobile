@@ -14,6 +14,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.example.moodle_usth_mobile_app.ui.theme.CardBorderLight
 
 /**
  * Thanh tiến độ liền mạch như thiết kế (không có khe hở/chấm cuối như LinearProgressIndicator của M3).
@@ -24,7 +25,7 @@ fun AppProgressBar(
     progress: Float,
     color: Color,
     modifier: Modifier = Modifier,
-    trackColor: Color = Color(0xFFE2E8F0),
+    trackColor: Color = CardBorderLight,
     height: Dp = 6.dp
 ) {
     val animated by animateFloatAsState(progress.coerceIn(0f, 1f), label = "progress")

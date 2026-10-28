@@ -15,12 +15,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.moodle_usth_mobile_app.R
 import com.example.moodle_usth_mobile_app.ui.theme.AccentGreen
 
 @Composable
 fun ProgressRing(
     progressPercent: Int,
-    label: String = "complete",
+    label: String = stringResource(R.string.home_ring_complete),
     size: Dp = 80.dp,
     strokeWidth: Dp = 7.dp,
     color: Color = AccentGreen,

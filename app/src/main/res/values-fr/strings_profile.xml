@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- hồ sơ -->
+    <string name="prof_title">Votre profil</string>
+    <string name="prof_student_info">Informations étudiant</string>
+    <string name="prof_student_id">Numéro d\'étudiant</string>
+    <string name="prof_academic_year">Année universitaire</string>
+    <string name="prof_current_semester">Semestre en cours</string>
+    <string name="prof_academic_progress">Ma progression</string>
+    <string name="prof_synced_title">Synchronisé</string>
+    <string name="prof_synced_body">Données provenant de %1$s. L\'app se met à jour quand vous revenez après 5 minutes ; tirez vers le bas pour actualiser.</string>
+    <string name="prof_synced_body_at">Données provenant de %1$s, synchronisées à %2$s. L\'app se met à jour quand vous revenez après 5 minutes ; tirez vers le bas pour actualiser.</string>
+    <string name="prof_demo_title">Mode démo</string>
+    <string name="prof_demo_body">Vous utilisez les données d\'exemple fournies avec l\'app. Déconnectez-vous pour vous connecter au backend.</string>
+    <string name="prof_offline_title">Hors ligne</string>
+    <string name="prof_offline_body">Impossible de joindre %1$s. Vous voyez les dernières données synchronisées.</string>
+    <string name="prof_offline_body_at">Impossible de joindre %1$s. Vous voyez les données synchronisées à %2$s.</string>
+    <string name="prof_logout_confirm_title">Se déconnecter ?</string>
+    <string name="prof_logout_confirm_body">Vous devrez vous reconnecter pour voir vos devoirs et votre emploi du temps. Les données enregistrées sur cet appareil seront supprimées.</string>
+    <string name="prof_logout_confirm_demo">Quitter le mode démo. Les marques « terminé » temporaires seront effacées.</string>
+
+    <!-- thông báo -->
+    <string name="notif_ui_title">Vos notifications</string>
+    <string name="notif_ui_tab_program">Votre filière</string>
+    <string name="notif_ui_tab_general">Enseignants &amp; école</string>
+    <string name="notif_ui_program_hint">Événements et actualités pour les étudiants de la filière %1$s.</string>
+    <string name="notif_ui_program_hint_generic">Événements et actualités pour les étudiants de votre filière.</string>
+    <string name="notif_ui_general_hint">Notes, nouveaux devoirs, échéances modifiées, annonces de classe et de l\'école.</string>
+    <string name="notif_ui_mark_all_read">Tout marquer comme lu</string>
+    <string name="notif_ui_deadlines">Rappels d\'échéance</string>
+    <string name="notif_ui_all_classwork">Tous les devoirs</string>
+    <plurals name="notif_ui_due_soon">
+        <item quantity="one">%d à rendre bientôt</item>
+        <item quantity="many">%d à rendre bientôt</item>
+        <item quantity="other">%d à rendre bientôt</item>
+    </plurals>
+    <string name="notif_ui_latest">Récent</string>
+    <string name="notif_ui_empty_program">Aucune actualité pour votre filière pour l\'instant.</string>
+    <string name="notif_ui_empty_general">Rien de nouveau de vos enseignants ni de l\'école.</string>
+    <string name="notif_ui_unread">Non lu</string>
+
+    <!-- thời khoá biểu -->
+    <string name="tt_eyebrow">Organisez vos études, à votre façon</string>
+    <string name="tt_title">Emploi du temps</string>
+    <string name="tt_today">Aujourd\'hui</string>
+    <string name="tt_this_month">Ce mois-ci</string>
+    <string name="tt_selected_month">Mois sélectionné</string>
+    <string name="tt_this_week">Cette semaine</string>
+    <string name="tt_selected_week">Semaine sélectionnée</string>
+    <string name="tt_month_tagline">Tout le mois en un coup d\'œil.</string>
+    <string name="tt_week_tagline">Une semaine de cours, en toute clarté.</string>
+    <plurals name="tt_sessions_unit" tools:ignore="ImpliedQuantity">
+        <item quantity="one">séance</item>
+        <item quantity="many">séances</item>
+        <item quantity="other">séances</item>
+    </plurals>
+    <plurals name="tt_courses_count">
+        <item quantity="one">%d cours</item>
+        <item quantity="many">%d cours</item>
+        <item quantity="other">%d cours</item>
+    </plurals>
+    <string name="tt_hours_unit">heures</string>
+    <string name="tt_lecture_and_lab">Cours magistraux &amp; TP</string>
+    <string name="tt_view_week">Semaine</string>
+    <string name="tt_view_month">Mois</string>
+    <string name="tt_prev_month">Mois précédent</string>
+    <string name="tt_prev_week">Semaine précédente</string>
+    <string name="tt_next_month">Mois suivant</string>
+    <string name="tt_next_week">Semaine suivante</string>
+    <string name="tt_has_classes">Jour de cours</string>
+    <string name="tt_local_time">Heures locales</string>
+    <plurals name="tt_day_summary">
+        <item quantity="one">%1$d séance · %2$s h</item>
+        <item quantity="many">%1$d séances · %2$s h</item>
+        <item quantity="other">%1$d séances · %2$s h</item>
+    </plurals>
+    <string name="tt_free_today">Pas de cours aujourd\'hui</string>
+    <string name="tt_no_classes">Aucun cours</string>
+    <string name="tt_see_day">Voir %1$s</string>
+    <string name="tt_footer">Les cours se répètent chaque semaine du semestre et sont synchronisés depuis le serveur. Touchez un cours pour ouvrir la matière et ses devoirs.</string>
+    <string name="tt_empty_title">Un peu de temps pour vous.</string>
+    <string name="tt_empty_body">Aucun cours ce jour-là. Révisez, terminez un devoir ou faites une pause.</string>
+    <string name="tt_hours_short">%1$s h</string>
+    <string name="tt_kind_lecture">Cours</string>
+    <string name="tt_kind_lab">TP</string>
+    <string name="tt_live">En cours</string>
+    <string name="tt_finished">Terminé</string>
+    <string name="tt_up_next">À venir</string>
+    <plurals name="tt_credits">
+        <item quantity="one">%d crédit</item>
+        <item quantity="many">%d crédits</item>
+        <item quantity="other">%d crédits</item>
+    </plurals>
+
+    <!-- đăng nhập -->
+    <string name="login_welcome">Bon retour</string>
+    <string name="login_subtitle">Connectez-vous avec votre compte étudiant ou enseignant pour voir vos devoirs, votre emploi du temps et votre progression.</string>
+    <string name="login_username">Identifiant (n° étudiant ou enseignant)</string>
+    <string name="login_username_hint">ex. BA22-041 ou gv-minh</string>
+    <string name="login_password">Mot de passe</string>
+    <string name="login_hide_password">Masquer le mot de passe</string>
+    <string name="login_show_password">Afficher le mot de passe</string>
+    <string name="login_server">Serveur : %1$s</string>
+    <string name="login_server_address">Adresse du backend</string>
+    <string name="login_submit">Se connecter</string>
+    <string name="login_demo">Essayer avec des données d\'exemple</string>
+    <string name="login_demo_accounts">Comptes de démonstration</string>
+    <string name="login_demo_students">Étudiants : %1$s</string>
+    <string name="login_demo_teachers">Enseignants : %1$s</string>
+    <string name="login_demo_password">Mot de passe : %1$s</string>
+    <string name="login_run_backend">Lancer le backend : %1$s</string>
+</resources>

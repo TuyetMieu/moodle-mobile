@@ -14,6 +14,13 @@ data class StudySummary(
 )
 
 /**
+ * Thời gian còn lại tới hạn nộp (chưa thành chữ — màn hình tự viết theo ngôn ngữ đang chọn).
+ * - overdue: đã quá hạn.
+ * - Còn dưới 1 giờ: chỉ có [minutes]. Dưới 24 giờ: [hours] + [minutes]. Từ 24 giờ: [days] (làm tròn lên).
+ */
+data class TimeLeft(val overdue: Boolean, val days: Int = 0, val hours: Int = 0, val minutes: Int = 0)
+
+/**
  * Quy tắc tính trạng thái/tiến độ — giống hệt backend (backend/src/services.js) để app
  * cập nhật tức thì theo đồng hồ mà không phải gọi lại API mỗi phút.
  */
@@ -33,15 +40,14 @@ object LearningRules {
     fun isUrgent(status: AssignmentStatus) =
         status == AssignmentStatus.URGENT || status == AssignmentStatus.OVERDUE
 
-    fun timeRemaining(assignment: Assignment, nowMs: Long): String {
-        val remaining = assignment.dueAtEpochMs - nowMs
-        if (remaining <= 0) return "Overdue"
-        val minutes = ((remaining + 59_999) / 60_000).toInt()
-        if (minutes < 60) return "$minutes min left"
+    fun timeLeft(dueAtEpochMs: Long, nowMs: Long): TimeLeft {
+        val remaining = dueAtEpochMs - nowMs
+        if (remaining <= 0) return TimeLeft(overdue = true)
+        val minutes = ((remaining + 59_999) / 60_000).toInt() // làm tròn lên
+        if (minutes < 60) return TimeLeft(overdue = false, minutes = minutes)
         val hours = minutes / 60
-        if (hours < 24) return "${hours}h ${minutes % 60}m left"
-        val days = ((remaining + DAY_MS - 1) / DAY_MS).toInt()
-        return "$days days left"
+        if (hours < 24) return TimeLeft(overdue = false, hours = hours, minutes = minutes % 60)
+        return TimeLeft(overdue = false, days = ((remaining + DAY_MS - 1) / DAY_MS).toInt())
     }
 
     /** Tiến độ môn học tính lại từ danh sách bài tập hiện tại (kể cả bài vừa đánh dấu xong). */
@@ -55,6 +61,21 @@ object LearningRules {
         assignments
             .filter { !it.isCompleted && (courseId == null || it.courseId == courseId) }
             .sortedBy { it.dueAtEpochMs }
+
+    /**
+     * Ưu tiên của sinh viên: bài CHƯA XONG và CHƯA QUÁ HẠN, deadline gần nhất đứng đầu.
+     * Bài quá hạn không còn nộp đúng hạn được nên tách riêng ở [overdue].
+     */
+    fun priorities(assignments: List<Assignment>, nowMs: Long): List<Assignment> =
+        assignments.filter { !it.isCompleted && it.dueAtEpochMs > nowMs }.sortedBy { it.dueAtEpochMs }
+
+    /** Bài chưa xong đã quá hạn, quá hạn gần đây nhất đứng đầu. */
+    fun overdue(assignments: List<Assignment>, nowMs: Long): List<Assignment> =
+        assignments.filter { !it.isCompleted && it.dueAtEpochMs <= nowMs }.sortedByDescending { it.dueAtEpochMs }
+
+    /** Việc nên làm tiếp theo: deadline gần nhất; nếu không còn bài nào sắp tới thì bài vừa quá hạn. */
+    fun nextDeadline(assignments: List<Assignment>, nowMs: Long): Assignment? =
+        priorities(assignments, nowMs).firstOrNull() ?: overdue(assignments, nowMs).firstOrNull()
 
     fun summary(assignments: List<Assignment>, nowMs: Long): StudySummary {
         val pending = assignments.filter { !it.isCompleted }

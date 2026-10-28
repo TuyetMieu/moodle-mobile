@@ -31,11 +31,16 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moodle_usth_mobile_app.R
 import com.example.moodle_usth_mobile_app.data.model.Course
+import com.example.moodle_usth_mobile_app.data.model.MAX_SCORE
+import com.example.moodle_usth_mobile_app.data.model.formatScore
+import com.example.moodle_usth_mobile_app.ui.theme.CardSurface
 import com.example.moodle_usth_mobile_app.ui.theme.AccentGreen
 import com.example.moodle_usth_mobile_app.ui.theme.AccentPurple
 import com.example.moodle_usth_mobile_app.ui.theme.PrimaryIndigo
@@ -65,7 +70,7 @@ fun CourseCard(
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = CardSurface),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Column {
@@ -109,7 +114,7 @@ fun CourseCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "${course.code} · ${course.credits} CREDITS",
+                            text = pluralStringResource(R.plurals.home_course_code_credits, course.credits, course.code, course.credits),
                             color = Color.White.copy(alpha = 0.9f),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
@@ -172,7 +177,11 @@ fun CourseCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "${course.done}/${course.total} completed",
+                        text = if (course.grade != null) {
+                            stringResource(R.string.home_course_done_grade, course.done, course.total, course.gradeText, formatScore(MAX_SCORE))
+                        } else {
+                            stringResource(R.string.home_course_done, course.done, course.total)
+                        },
                         fontSize = 12.sp,
                         color = TextSecondary
                     )
@@ -180,7 +189,11 @@ fun CourseCard(
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = if (course.total > course.done) "${course.total - course.done} to do" else "All caught up",
+                        text = if (course.total > course.done) {
+                            pluralStringResource(R.plurals.home_course_to_do, course.total - course.done, course.total - course.done)
+                        } else {
+                            stringResource(R.string.home_course_all_caught_up)
+                        },
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (course.total > course.done) PrimaryIndigo else AccentGreen

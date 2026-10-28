@@ -27,7 +27,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.example.moodle_usth_mobile_app.R
 import com.example.moodle_usth_mobile_app.ui.theme.AccentCoral
+import com.example.moodle_usth_mobile_app.ui.theme.CardBorderLight
 import com.example.moodle_usth_mobile_app.ui.theme.PrimaryIndigo
 import com.example.moodle_usth_mobile_app.ui.theme.TextPrimary
 import com.example.moodle_usth_mobile_app.ui.theme.TextSecondary
@@ -78,7 +82,7 @@ fun AppHeader(
                 letterSpacing = 0.5.sp
             )
             Text(
-                text = "Hi, $firstName ✨",
+                text = stringResource(R.string.home_greeting, firstName),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextPrimary
@@ -91,11 +95,12 @@ fun AppHeader(
                 onClick = onNotificationClick,
                 modifier = Modifier
                     .size(40.dp)
-                    .background(Color(0xFFF1F5F9), CircleShape)
+                    .background(CardBorderLight, CircleShape)
             ) {
                 Icon(
                     imageVector = Icons.Default.Notifications,
-                    contentDescription = "Notifications",
+                    contentDescription = if (urgentCount > 0) pluralStringResource(R.plurals.home_notifications_unread, urgentCount, urgentCount)
+                    else stringResource(R.string.home_notifications),
                     tint = TextPrimary
                 )
             }
@@ -109,7 +114,7 @@ fun AppHeader(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = urgentCount.toString(),
+                        text = if (urgentCount > 9) "9+" else urgentCount.toString(),
                         color = Color.White,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Giao diện giáo viên (tiếng Anh — mặc định). -->
+<resources>
+    <string name="teacher_hello">Hello, %1$s</string>
+    <string name="teacher_stat_courses">Courses</string>
+    <string name="teacher_stat_students">Students</string>
+    <string name="teacher_stat_waiting">Waiting for grading</string>
+    <string name="teacher_stat_missing">Missing submissions</string>
+    <string name="teacher_my_courses">Courses you teach</string>
+    <string name="teacher_no_courses">You aren\'t teaching any course this semester.</string>
+    <string name="teacher_course_code_credits">%1$s · %2$d CREDITS</string>
+    <plurals name="teacher_students_count">
+        <item quantity="one">%d student</item>
+        <item quantity="other">%d students</item>
+    </plurals>
+    <plurals name="teacher_assignments_count">
+        <item quantity="one">%d assignment</item>
+        <item quantity="other">%d assignments</item>
+    </plurals>
+    <string name="teacher_next_deadline">Next deadline</string>
+    <string name="teacher_no_deadline">No upcoming deadline</string>
+    <string name="teacher_class_average">Class average</string>
+
+    <!-- trang môn học -->
+    <string name="teacher_tab_assignments">Assignments</string>
+    <string name="teacher_tab_grading">Grading scheme</string>
+    <string name="teacher_tab_students">Students</string>
+    <string name="teacher_tab_stream">Stream</string>
+    <string name="teacher_new_assignment">New assignment</string>
+    <string name="teacher_edit_assignment">Edit assignment</string>
+    <string name="teacher_auto_grade_info">Grades are set by the machine: each submitted task is graded automatically once its deadline passes (late work loses 2 points). Use “Grade now” to grade submissions before the deadline.</string>
+    <string name="teacher_group_empty">No assignments in this component yet.</string>
+    <string name="teacher_contribution">%1$s%% of course</string>
+    <string name="teacher_closed">Closed</string>
+    <string name="teacher_due_line">Due %1$s · %2$s</string>
+    <string name="teacher_submission_stats">Submitted %1$d/%2$d · graded %3$d · average %4$s</string>
+    <string name="teacher_auto_grade_now">Grade now (%1$d)</string>
+
+    <string name="teacher_grading_info">Course grade (out of 20) = weighted average of the components below. Weights must add up to 100%. If bonus is on, the bonus is added on top, up to a maximum of 20.</string>
+    <string name="teacher_component_name">Component</string>
+    <string name="teacher_remove_component">Remove %1$s</string>
+    <plurals name="teacher_component_in_use">
+        <item quantity="one">%d assignment uses this component · can\'t be removed</item>
+        <item quantity="other">%d assignments use this component · can\'t be removed</item>
+    </plurals>
+    <string name="teacher_add_component">Add component</string>
+    <string name="teacher_weight_total">Total: %1$d%% / 100%%</string>
+    <string name="teacher_names_invalid">Every component needs a name, and names must be different.</string>
+    <string name="teacher_bonus_title">Bonus points</string>
+    <string name="teacher_bonus_desc">Bonus assignments add extra points directly to the course grade (max 20).</string>
+    <plurals name="teacher_bonus_in_use">
+        <item quantity="one">%d bonus assignment exists · delete it to turn bonus off</item>
+        <item quantity="other">%d bonus assignments exist · delete them to turn bonus off</item>
+    </plurals>
+    <string name="teacher_bonus_max">Maximum bonus</string>
+    <string name="teacher_decrease">Decrease</string>
+    <string name="teacher_increase">Increase</string>
+    <string name="teacher_save_grading">Save grading scheme</string>
+
+    <string name="teacher_students_info">Grades are computed automatically from the machine-graded assignments and the grading scheme.</string>
+    <string name="teacher_no_students">No students are enrolled yet.</string>
+    <string name="teacher_student_progress">%1$d/%2$d tasks submitted</string>
+    <plurals name="teacher_missing_count">
+        <item quantity="one">%d missing</item>
+        <item quantity="other">%d missing</item>
+    </plurals>
+    <string name="teacher_bonus_short">+%1$s bonus</string>
+
+    <string name="teacher_post_to_class">Post to this class</string>
+    <string name="teacher_pinned">Pinned</string>
+
+    <!-- form bài tập -->
+    <string name="teacher_field_title">Title</string>
+    <string name="teacher_field_description">Description</string>
+    <string name="teacher_field_component">Grade component</string>
+    <string name="teacher_field_weight">Weight within the component</string>
+    <string name="teacher_field_weight_help">Relative weight, e.g. proposal 25 and final demo 75.</string>
+    <string name="teacher_contribution_preview">This assignment will count for about %1$s%% of the course grade.</string>
+    <string name="teacher_bonus_task_info">Bonus assignment: its score is converted to up to +%1$s points added to the course grade.</string>
+    <string name="teacher_field_due">Deadline</string>
+    <string name="teacher_due_change_notice">Students will be notified that the deadline changed.</string>
+    <string name="teacher_create">Create assignment</string>
+    <string name="teacher_delete_title">Delete?</string>
+    <string name="teacher_delete_assignment_question">Delete “%1$s”? Students\' submissions for it will be removed.</string>
+    <string name="teacher_delete_post_question">Delete “%1$s”?</string>
+
+    <!-- đăng tin -->
+    <string name="teacher_posts_overline">Announcements</string>
+    <string name="teacher_posts_title">Post news</string>
+    <string name="teacher_composer_title">New post</string>
+    <string name="teacher_audience">Send to</string>
+    <string name="teacher_audience_course">A class</string>
+    <string name="teacher_audience_program">Program %1$s</string>
+    <string name="teacher_audience_all">Whole school</string>
+    <string name="teacher_audience_course_help">Appears in the class stream and notifies its students.</string>
+    <string name="teacher_audience_program_help">For every student of %1$s, in their “Your program” tab.</string>
+    <string name="teacher_audience_all_help">For every student, in their “Teachers &amp; school” tab.</string>
+    <string name="teacher_field_course">Class</string>
+    <string name="teacher_field_kind">Type</string>
+    <string name="teacher_kind_notice">Notice</string>
+    <string name="teacher_kind_event">Event</string>
+    <string name="teacher_field_body">Message</string>
+    <string name="teacher_field_event_at">Event date &amp; time</string>
+    <string name="teacher_event_in_past">The event must be in the future.</string>
+    <string name="teacher_field_location">Location (optional)</string>
+    <string name="teacher_pin">Pin to the top of the stream</string>
+    <string name="teacher_publish">Publish</string>
+    <string name="teacher_my_posts">Your program &amp; school posts</string>
+    <string name="teacher_my_posts_help">Class posts are listed in each class\'s Stream tab.</string>
+    <string name="teacher_no_posts">You haven\'t posted anything yet.</string>
+
+    <!-- hồ sơ -->
+    <string name="teacher_profile_overline">Teacher</string>
+    <string name="teacher_profile_title">Your profile</string>
+    <string name="teacher_staff_code">Staff ID</string>
+    <string name="teacher_program">Program</string>
+    <string name="teacher_semester">Semester</string>
+    <string name="teacher_server">Connected to %1$s</string>
+    <string name="teacher_logout_title">Log out?</string>
+    <string name="teacher_logout_text">You\'ll need to log in again to manage your classes.</string>
+
+    <!-- snackbar -->
+    <string name="teacher_msg_grading_saved">Grading scheme saved · students\' grades updated.</string>
+    <string name="teacher_msg_assignment_created">Assignment created · students have been notified.</string>
+    <string name="teacher_msg_assignment_saved">Assignment saved.</string>
+    <string name="teacher_msg_assignment_deleted">Assignment deleted.</string>
+    <string name="teacher_msg_nothing_to_grade">Nothing to grade: no new submissions.</string>
+    <plurals name="teacher_msg_graded">
+        <item quantity="one">The machine graded %d submission.</item>
+        <item quantity="other">The machine graded %d submissions.</item>
+    </plurals>
+    <string name="teacher_msg_posted">Posted.</string>
+    <string name="teacher_msg_post_deleted">Post deleted.</string>
+</resources>

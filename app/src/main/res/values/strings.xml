@@ -1,3 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Chuỗi lõi (dùng chung). Ngôn ngữ mặc định: tiếng Anh. Bản dịch: values-vi/, values-fr/.
+     Chuỗi riêng của từng nhóm màn hình nằm trong strings_*.xml cùng thư mục. -->
 <resources>
-    <string name="app_name">moodle-usth-mobile-app</string>
+    <string name="app_name" translatable="false">Moodle USTH</string>
+
+    <!-- chung -->
+    <string name="common_cancel">Cancel</string>
+    <string name="common_save">Save</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_close">Close</string>
+    <string name="common_retry">Try again</string>
+    <string name="common_logout">Log out</string>
+    <string name="common_back">Back</string>
+    <string name="common_edit">Edit</string>
+    <string name="common_add">Add</string>
+    <string name="common_ok">OK</string>
+    <string name="common_loading">Syncing with Moodle…</string>
+    <string name="common_load_failed">Couldn\'t load data</string>
+    <string name="common_score_out_of">%1$s / %2$s</string>
+    <string name="common_bonus">Bonus</string>
+    <string name="common_bonus_up_to">Bonus · up to +%1$s</string>
+    <string name="common_auto_graded">Auto-graded</string>
+    <string name="common_late">Late</string>
+
+    <!-- thanh điều hướng -->
+    <string name="nav_home">Home</string>
+    <string name="nav_courses">Courses</string>
+    <string name="nav_timetable">Timetable</string>
+    <string name="nav_tracker">Tracker</string>
+    <string name="nav_profile">Profile</string>
+    <string name="nav_teaching">Classes</string>
+    <string name="nav_posts">Posts</string>
+
+    <!-- banner trạng thái -->
+    <string name="banner_demo">Demo mode · sample data, not connected to a server</string>
+    <string name="banner_offline_at">Offline · data from %1$s. Tap to retry.</string>
+    <string name="banner_offline">Offline · showing saved data. Tap to retry.</string>
+
+    <!-- thời gian -->
+    <string name="time_just_now">Just now</string>
+    <string name="time_yesterday">Yesterday</string>
+    <string name="time_today_at">Today, %1$s</string>
+    <string name="time_yesterday_at">Yesterday, %1$s</string>
+    <string name="time_synced_today">%1$s today</string>
+    <plurals name="time_minutes_ago">
+        <item quantity="one">%d min ago</item>
+        <item quantity="other">%d min ago</item>
+    </plurals>
+    <plurals name="time_hours_ago">
+        <item quantity="one">%d hour ago</item>
+        <item quantity="other">%d hours ago</item>
+    </plurals>
+    <plurals name="time_days_ago">
+        <item quantity="one">%d day ago</item>
+        <item quantity="other">%d days ago</item>
+    </plurals>
+    <string name="time_left_overdue">Overdue</string>
+    <string name="time_left_minutes">%d min left</string>
+    <string name="time_left_hours">%1$dh %2$dm left</string>
+    <plurals name="time_left_days">
+        <item quantity="one">%d day left</item>
+        <item quantity="other">%d days left</item>
+    </plurals>
+
+    <!-- nhắc hạn nộp (thông báo hệ thống) -->
+    <plurals name="reminder_left_days">
+        <item quantity="one">%d day left</item>
+        <item quantity="other">%d days left</item>
+    </plurals>
+    <plurals name="reminder_left_hours">
+        <item quantity="one">%d hour left</item>
+        <item quantity="other">%d hours left</item>
+    </plurals>
+    <plurals name="reminder_left_minutes">
+        <item quantity="one">%d minute left</item>
+        <item quantity="other">%d minutes left</item>
+    </plurals>
+    <string name="reminder_left_hours_minutes">%1$d h %2$d min left</string>
+    <string name="reminder_title">%1$s: %2$s</string>
+    <string name="reminder_body">%1$s · Due %2$s</string>
+    <string name="channel_deadlines">Deadline reminders</string>
+    <string name="channel_deadlines_desc">Reminders for unfinished assignments before they are due</string>
+    <string name="channel_program">News from your program</string>
+    <string name="channel_program_desc">Events and notices for students of your program</string>
+    <string name="channel_general">Teachers &amp; whole school</string>
+    <string name="channel_general_desc">New grades, new assignments, deadline changes, class posts and school-wide notices</string>
+
+    <!-- nội dung thông báo (app tự viết theo ngôn ngữ đang chọn) -->
+    <string name="notif_grade_title">New grade · %1$s</string>
+    <string name="notif_grade_body">%1$s · %2$s</string>
+    <string name="notif_grade_body_late">%1$s · %2$s · submitted late (−2)</string>
+    <string name="notif_assignment_new_title">New assignment · %1$s</string>
+    <string name="notif_assignment_new_body">%1$s · due %2$s</string>
+    <string name="notif_deadline_changed_title">Deadline changed · %1$s</string>
+    <string name="notif_deadline_changed_body">%1$s: %2$s → %3$s</string>
+    <string name="notif_class_post_title">%1$s · %2$s</string>
+    <string name="notif_event_when">%1$s · %2$s</string>
+    <plurals name="notif_summary">
+        <item quantity="one">%d new notification</item>
+        <item quantity="other">%d new notifications</item>
+    </plurals>
+
+    <!-- cài đặt -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_theme">Appearance</string>
+    <string name="lang_system">System default</string>
+    <string name="lang_vi" translatable="false">Tiếng Việt</string>
+    <string name="lang_en" translatable="false">English</string>
+    <string name="lang_fr" translatable="false">Français</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="settings_reminders">Deadline reminders</string>
+    <string name="settings_reminders_desc">Notify me before unfinished assignments are due.</string>
+    <string name="settings_reminder_leads">Remind me</string>
+    <string name="settings_reminders_blocked">App notifications are turned off in system settings, so reminders won\'t show.</string>
+    <string name="settings_reminders_denied">Notification permission not granted · you can turn it on in Settings › Apps › Notifications.</string>
+    <string name="settings_notify_title">Notifications</string>
+    <string name="settings_notify_desc">The app checks for news about every 15 minutes, even when it\'s closed.</string>
+    <string name="settings_notify_program">News from your program</string>
+    <string name="settings_notify_general">Teachers &amp; whole school</string>
+    <string name="lead_THREE_DAYS">3 days</string>
+    <string name="lead_ONE_DAY">1 day</string>
+    <string name="lead_TWELVE_HOURS">12 hours</string>
+    <string name="lead_SIX_HOURS">6 hours</string>
+    <string name="lead_TWO_HOURS">2 hours</string>
+    <string name="lead_ONE_HOUR">1 hour</string>
+    <string name="lead_THIRTY_MINUTES">30 min</string>
+    <string name="reminders_off">Deadline reminders turned off.</string>
+    <string name="reminders_on_none">Deadline reminders on · nothing to remind you about right now.</string>
+    <plurals name="reminders_on_count">
+        <item quantity="one">Deadline reminders on · %d reminder scheduled.</item>
+        <item quantity="other">Deadline reminders on · %d reminders scheduled.</item>
+    </plurals>
+    <string name="reminders_leads_empty">Choose at least one reminder time.</string>
+
+    <!-- thông báo ngắn (snackbar) -->
+    <string name="msg_course_progress">%1$s: %2$d%% complete · %3$d tasks left.</string>
+    <string name="msg_unmarked">Unmarked “%1$s”.</string>
+    <string name="msg_report_downloaded">Grade report downloaded: %1$s</string>
+
+    <!-- lỗi -->
+    <string name="error_timeout">The server isn\'t responding (%1$s). Check that the backend is running and the app may access the local network (Settings › Apps › Permissions).</string>
+    <string name="error_connect">Can\'t reach %1$s. Check that the backend is running and the app may access the local network.</string>
+    <string name="error_generic">Can\'t reach %1$s. Check the backend and the server address.</string>
+    <string name="error_session_expired">Your session has expired. Please log in again.</string>
+    <string name="error_offline_cache">Can\'t reach the server · showing saved data.</string>
+    <string name="error_missing_credentials">Please enter your username and password</string>
+    <string name="error_invalid_credentials">Wrong username or password</string>
+    <string name="error_too_many_attempts">Too many wrong attempts. Please try again later.</string>
+    <string name="error_already_graded">This work has been graded and can no longer be un-marked.</string>
+    <string name="error_forbidden">Your account can\'t use this feature.</string>
+    <string name="error_weights_sum">Component weights must add up to 100%.</string>
+    <string name="error_component_in_use">This component still has assignments. Move or delete them first.</string>
+    <string name="error_bonus_in_use">The course still has bonus assignments. Delete them before turning bonus off.</string>
+    <string name="error_bonus_disabled">Turn on bonus for this course first.</string>
+    <string name="error_assignment_graded">This assignment already has grades and can\'t be deleted.</string>
+    <string name="error_due_in_past">The deadline must be in the future.</string>
+    <string name="error_duplicate_component">Two components have the same name.</string>
 </resources>

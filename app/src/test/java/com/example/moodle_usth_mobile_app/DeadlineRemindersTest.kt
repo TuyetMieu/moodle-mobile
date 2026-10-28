@@ -1,12 +1,10 @@
 package com.example.moodle_usth_mobile_app
 
 import com.example.moodle_usth_mobile_app.data.model.Assignment
-import com.example.moodle_usth_mobile_app.data.model.AssignmentCategory
 import com.example.moodle_usth_mobile_app.reminders.ReminderHelper
 import com.example.moodle_usth_mobile_app.ui.dialogs.matchesSearch
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -21,9 +19,11 @@ class DeadlineRemindersTest {
         courseTitle = "Web Application Development",
         courseShortTitle = "Web Development",
         title = "Task $id",
-        category = AssignmentCategory.FINAL_PROJECT,
-        contribution = 15,
         description = "",
+        componentId = "web-final",
+        componentName = "Final project",
+        componentWeight = 60,
+        contribution = 15.0,
         dueAtEpochMs = now + (dueInHours * hour).toLong(),
         completedAtEpochMs = if (completed) now - hour else null
     )
@@ -35,14 +35,12 @@ class DeadlineRemindersTest {
     }
 
     @Test
-    fun notificationTextIsComputedWhenItIsShown() {
-        val due = now + 72 * hour
-        assertEquals("Còn 1 ngày", ReminderHelper.remainingText(due, due - 24 * hour))
-        assertEquals("Còn 2 giờ", ReminderHelper.remainingText(due, due - 2 * hour))
-        // Báo thức đến muộn 40 phút so với mốc 2 giờ → câu chữ vẫn đúng.
-        assertEquals("Còn 1 giờ 20 phút", ReminderHelper.remainingText(due, due - 80 * 60_000L))
-        assertEquals("Còn 5 phút", ReminderHelper.remainingText(due, due - 5 * 60_000L))
-        assertNull(ReminderHelper.remainingText(due, due + 1))
+    fun usesTheLeadTimesTheStudentChose() {
+        // Chọn 3 ngày, 6 giờ và 30 phút trước hạn.
+        val leads = listOf(72 * hour, 6 * hour, hour / 2)
+        val plan = ReminderHelper.makePlan(listOf(assignment("a", 100.0)), now, leads)
+        assertEquals(listOf(28 * hour, 94 * hour, 100 * hour - hour / 2), plan.map { it.triggerAtEpochMs - now })
+        assertEquals(setOf(72 * hour, 6 * hour, hour / 2), plan.map { it.leadMs }.toSet())
     }
 
     @Test
@@ -63,7 +61,7 @@ class DeadlineRemindersTest {
     fun keepsOnlyTheNearestRemindersSortedByTime() {
         val many = (1..40).map { assignment("t$it", 30.0 + it) }
         val plan = ReminderHelper.makePlan(many, now)
-        assertEquals(24, plan.size)
+        assertEquals(48, plan.size)
         assertEquals(plan.sortedBy { it.triggerAtEpochMs }, plan)
         assertEquals("t1", plan[0].assignmentId)
     }
